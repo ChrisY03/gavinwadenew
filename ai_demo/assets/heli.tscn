@@ -62,7 +62,7 @@ shadow_enabled = true
 shadow_bias = 0.05
 spot_range = 200.0
 spot_attenuation = 0.6
-spot_angle = 1.0
+spot_angle = 10.0
 
 [node name="RayCast3D" type="RayCast3D" parent="SearchLightPivot/SearchLight"]
 target_position = Vector3(0, 0, -30)
