@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://i64y8efd8ifr"]
+
+[ext_resource type="PackedScene" uid="uid://dj0vxhttsyh6b" path="res://assets/terrrain.tscn" id="1_g3t8v"]
+
+[node name="PierceScene" type="Node3D"]
+
+[node name="Terrrain" parent="." instance=ExtResource("1_g3t8v")]
