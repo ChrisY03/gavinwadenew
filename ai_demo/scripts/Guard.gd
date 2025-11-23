@@ -14,12 +14,14 @@ extends CharacterBody3D
 @export var wander_radius: float = 20.0
 @export var wander_interval: float = 3.0
 
+var _nav_ok := false
+
 # Optional polish (can tweak in Inspector)
 @export var lookahead_m: float = 2.5
 @export var chase_turn_boost: float = 1.6
 @export var susp_turn_boost: float = 1.2
 
-# Task hooks (director-friendly)
+# Task hooks 
 var task_route: Array[Vector3] = []
 var task_idx: int = 0
 var _last_task_time: float = 0.0
@@ -70,11 +72,17 @@ func _ready() -> void:
 	if patrol_points.is_empty():
 		state = State.WANDER
 		wander_timer = 0.0
+	
+	call_deferred("_wait_navmap")
 
 
 func _physics_process(delta: float) -> void:
 	_perceive(delta)
 	_state_logic(delta)
+
+	if not _nav_ok:
+		return
+
 	if player == null:
 		player = get_tree().get_first_node_in_group("player")
 
@@ -261,27 +269,35 @@ func _state_logic(delta: float) -> void:
 
 # --- Helpers ---
 
+func _wait_navmap() -> void:
+	var rid := agent.get_navigation_map()
+	while not (rid.is_valid() and NavigationServer3D.map_get_iteration_id(rid) > 0):
+		await get_tree().process_frame
+		rid = agent.get_navigation_map()
+	_nav_ok = true
+
+
 func _set_agent_target_safely(p: Vector3) -> void:
-	var rid = agent.get_navigation_map()
-	if rid.is_valid():
-		p = NavigationServer3D.map_get_closest_point(rid, p)
-	if agent.target_position.distance_to(p) > 0.4:
+	var rid := agent.get_navigation_map()
+	if not (rid.is_valid() and NavigationServer3D.map_get_iteration_id(rid) > 0):
+		return
+	p = NavigationServer3D.map_get_closest_point(rid, p)
+	if agent.target_position.distance_to(p) > 0.75:
 		agent.target_position = p
 
+
 func get_random_nav_point() -> Vector3:
-	var origin = global_transform.origin
-	var rand_dir = Vector3(
-		randf_range(-1.0, 1.0),
-		0.0,
-		randf_range(-1.0, 1.0)
+	var rid := agent.get_navigation_map()
+	if not (rid.is_valid() and NavigationServer3D.map_get_iteration_id(rid) > 0):
+		return global_transform.origin
+	var origin := global_transform.origin
+	var rand_dir := Vector3(
+		randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0)
 	).normalized() * randf_range(5.0, wander_radius)
-	var candidate = origin + rand_dir
-	var rid = agent.get_navigation_map()
-	if rid.is_valid():
-		var p = NavigationServer3D.map_get_closest_point(rid, candidate)
-		if p != Vector3.INF:
-			return p
-	return candidate
+	var candidate := origin + rand_dir
+	var p := NavigationServer3D.map_get_closest_point(rid, candidate)
+	return p if p != Vector3.INF else origin
+
 
 # Vision cone signals (optional extra sensor)
 func _on_vision_cone_3d_body_sighted(body: Node3D) -> void:

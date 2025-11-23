@@ -20,7 +20,7 @@ config/icon="res://icon.svg"
 Blackboard="*res://scripts/Blackboard.gd"
 Sector="*res://scripts/sectorizer.gd"
 Main="*res://scripts/Main.gd"
-Director="*res://scripts/Director.gd"
+Director="*res://scripts/AIDirector.gd"
 
 [editor]
 

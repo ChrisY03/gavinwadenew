@@ -9,7 +9,7 @@
 [node name="ChrisScene" type="Node3D"]
 script = ExtResource("1_d4l1i")
 sector_bounds_path = NodePath("SectorBounds")
-nav_region_path = NodePath("Terrrain/terrainobject/Plane_001/NavigationRegion3D")
+nav_region_path = NodePath("Terrrain/terrainobject/NavigationRegion3D")
 
 [node name="Terrrain" parent="." instance=ExtResource("1_aexdf")]
 
