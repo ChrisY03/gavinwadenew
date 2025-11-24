@@ -41,7 +41,7 @@ func push_event(kind: String, pos: Vector3, weight: float = 1.0) -> void:
 			w = 0.5
 	if kind == "noise":
 		if sid != -1:
-a			Sector.bump_heat(sid, weight)
+			Sector.bump_heat(sid, weight)
 
 	sector_heat[sid] += w * weight
 

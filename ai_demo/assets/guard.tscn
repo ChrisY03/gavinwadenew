@@ -57,7 +57,9 @@ spot_angle = 40.75
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.596743, -0.936384)
 script = ExtResource("3_agl3b")
 
-[node name="Sign" type="Label3D" parent="Facing"]
+[node name="Overhead" type="Node3D" parent="Facing"]
+
+[node name="Sign" type="Label3D" parent="Facing/Overhead"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3783088, 0)
 billboard = 1
 font_size = 96

@@ -1,7 +1,6 @@
 # res://Systems/Sectorizer.gd
 extends Node
 
-
 # Tunables
 @export var cell_size: float = 50.0          # meters between sector centers
 @export var accept_dist: float = 20.0        # max distance to nav to accept a sector
@@ -60,7 +59,6 @@ func build_from_bounds(bounds: Area3D, nav_region: NavigationRegion3D, new_cell_
 			var nav_pt := NavigationServer3D.map_get_closest_point(_nav_map, probe)
 			var walkable := nav_pt != Vector3.INF and nav_pt.distance_to(probe) <= accept_dist
 			if walkable:
-			
 				probe.y = nav_pt.y
 
 			var center_point := nav_pt if walkable else probe
@@ -77,7 +75,6 @@ func build_from_bounds(bounds: Area3D, nav_region: NavigationRegion3D, new_cell_
 			})
 			id += 1
 
-	# keep this print at the same indent level as the 'for' loops (still inside the function)
 	print("Sectorizer: built %d cells (%d x %d)" % [_sectors.size(), _nx, _nz])
 
 
@@ -88,61 +85,100 @@ func sector_id_at(pos: Vector3) -> int:
 	var best := -1
 	var best_d2 := INF
 	for s in _sectors:
-		if not s.walkable: continue
-		var d2 = s.center.distance_squared_to(pos)
+		if not s["walkable"]:
+			continue
+		var d2 = (s["center"] as Vector3).distance_squared_to(pos)
 		if d2 < best_d2:
-			best_d2 = d2; best = s.id
+			best_d2 = d2
+			best = int(s["id"])
 	return best
 
 func center(id: int) -> Vector3:
-	return _sectors[id].center
+	return _sectors[id]["center"] as Vector3
 
 func neighbors(id: int) -> PackedInt32Array:
 	var s = _sectors[id]
-	var i: int = s.i
-	var j: int = s.j
+	var i: int = int(s["i"])
+	var j: int = int(s["j"])
 
 	var ids := PackedInt32Array()
 
 	var n = _cell_index(i + 1, j)
-	if n != -1 and _sectors[n].walkable:
+	if n != -1 and _sectors[n]["walkable"]:
 		ids.append(n)
 
 	n = _cell_index(i - 1, j)
-	if n != -1 and _sectors[n].walkable:
+	if n != -1 and _sectors[n]["walkable"]:
 		ids.append(n)
 
 	n = _cell_index(i, j + 1)
-	if n != -1 and _sectors[n].walkable:
+	if n != -1 and _sectors[n]["walkable"]:
 		ids.append(n)
 
 	n = _cell_index(i, j - 1)
-	if n != -1 and _sectors[n].walkable:
+	if n != -1 and _sectors[n]["walkable"]:
 		ids.append(n)
 
 	return ids
 
-
 func random_point_in(id: int) -> Vector3:
-	var c = _sectors[id].center
+	var c = _sectors[id]["center"] as Vector3
 	var jx = randf_range(-0.45, 0.45) * cell_size
 	var jz = randf_range(-0.45, 0.45) * cell_size
 	var candidate = c + Vector3(jx, 0.0, jz)
 	if _nav_map.is_valid():
 		var p = NavigationServer3D.map_get_closest_point(_nav_map, candidate)
-		if p != Vector3.INF: return p
+		if p != Vector3.INF:
+			return p
 	return candidate
 
-# Optional: debug helper to feed a MultiMeshInstance3D (one box per sector)
-func debug_fill_multimesh(mmi: MultiMeshInstance3D, y_offset: float = 0.2, box_scale: float = 0.2) -> void:
-	if mmi == null: return
-	if mmi.multimesh == null:
-		mmi.multimesh = MultiMesh.new()
-	var mm = mmi.multimesh
-	mm.transform_format = MultiMesh.TRANSFORM_3D
-	mm.instance_count = _sectors.size()
+
+# ------------------------------
+# Heat API expected by Director
+# ------------------------------
+
+func id_at(p: Vector3) -> int:
+	# Convenience alias used by Director
+	return sector_id_at(p)
+
+func center_of(sid: int) -> Vector3:
+	return center(sid)
+
+func heat_of(sid: int) -> float:
+	if sid < 0 or sid >= _sectors.size():
+		return 0.0
+	return float(_sectors[sid]["heat"])
+
+func set_cooldown(sid: int, seconds: float) -> void:
+	if sid < 0 or sid >= _sectors.size():
+		return
+	_sectors[sid]["cooldown_until"] = Time.get_unix_time_from_system() + seconds
+
+func bump_heat(sid: int, amount: float) -> void:
+	if sid < 0 or sid >= _sectors.size():
+		return
+	var now := Time.get_unix_time_from_system()
+	# ignore bumps during cooldown
+	if now < float(_sectors[sid]["cooldown_until"]):
+		return
+	var h := float(_sectors[sid]["heat"])
+	h = clampf(h + amount, 0.0, 10.0)
+	_sectors[sid]["heat"] = h
+
+func cool_all(rate_per_sec: float, dt: float) -> void:
+	if rate_per_sec <= 0.0 or dt <= 0.0:
+		return
+	var dec := rate_per_sec * dt
 	for k in _sectors.size():
-		var s = _sectors[k]
-		var t := Transform3D(Basis.IDENTITY, s.center + Vector3(0, y_offset, 0))
-		t.basis = Basis().scaled(Vector3(box_scale, box_scale, box_scale))
-		mm.set_instance_transform(k, t)
+		var h := float(_sectors[k]["heat"])
+		if h > 0.0:
+			h = max(0.0, h - dec)
+			_sectors[k]["heat"] = h
+
+func neighbors_of(sid: int) -> Array[int]:
+	# Array form (sometimes nicer for loops)
+	var out: Array[int] = []
+	var packed := neighbors(sid)
+	for idx in packed.size():
+		out.append(packed[idx])
+	return out
