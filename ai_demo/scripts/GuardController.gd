@@ -12,6 +12,8 @@ enum State { PATROL, SUSPICIOUS, CHASE, SEARCH, WANDER }
 @onready var perception = $Perception
 @onready var tasks = $TaskRunner
 @onready var label: Label3D = $Facing/Label3D
+@onready var sign_node: Label3D = $Facing/Sign
+
 
 var patrol_points: Array[Vector3] = []
 var patrol_idx := 0

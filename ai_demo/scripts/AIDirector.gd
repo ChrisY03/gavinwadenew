@@ -39,6 +39,9 @@ func push_event(kind: String, pos: Vector3, weight: float = 1.0) -> void:
 			w = 0.4
 		_:
 			w = 0.5
+	if kind == "noise":
+		if sid != -1:
+			Sector.bump_heat(sid, weight)
 
 	sector_heat[sid] += w * weight
 
@@ -114,3 +117,4 @@ func tick_dispatch(_elapsed: float) -> void:
 
 func mark_sector_cooldown(sid: int) -> void:
 	sector_cooldown[sid] = Time.get_unix_time_from_system() + sector_cooldown_sec
+	
