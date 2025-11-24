@@ -13,15 +13,12 @@ extends CharacterBody3D
 @export var turn_speed: float = 8.0
 @export var wander_radius: float = 20.0
 @export var wander_interval: float = 3.0
-
-var _nav_ok := false
-
-# Optional polish (can tweak in Inspector)
 @export var lookahead_m: float = 2.5
 @export var chase_turn_boost: float = 1.6
 @export var susp_turn_boost: float = 1.2
 
-# Task hooks 
+var _nav_ok := false
+
 var task_route: Array[Vector3] = []
 var task_idx: int = 0
 var _last_task_time: float = 0.0
@@ -48,54 +45,40 @@ var wander_target: Vector3
 var player_in_cone: bool = false
 
 func _ready() -> void:
-	# Physics/slope
 	floor_snap_length = floor_snap
 	floor_max_angle = deg_to_rad(max_slope_deg)
-
-	# Group for the director/dispatcher
 	add_to_group("guards")
-
-	# Waypoints (optional safety)
 	for c in get_children():
 		if c is Marker3D and c.name.begins_with("WP"):
 			patrol_points.append(c.global_transform.origin)
-	if patrol_points.is_empty():
-		push_warning("Guard has no WP markers")
-	else:
+	if not patrol_points.is_empty():
 		agent.target_position = patrol_points[0]
-
+	else:
+		state = State.WANDER
+		wander_timer = 0.0
 	agent.max_speed = move_speed
 	agent.path_max_distance = 2.5
 	label.text = "PATROL"
 	player = get_tree().get_first_node_in_group("player")
-
-	if patrol_points.is_empty():
-		state = State.WANDER
-		wander_timer = 0.0
-	
 	call_deferred("_wait_navmap")
 
-
 func _physics_process(delta: float) -> void:
-	_perceive(delta)
-	_state_logic(delta)
-
 	if not _nav_ok:
 		return
+
+	_perceive(delta)
+	_state_logic(delta)
 
 	if player == null:
 		player = get_tree().get_first_node_in_group("player")
 
-	# Hint agent about current horizontal velocity (helps smoothing)
 	agent.velocity = Vector3(velocity.x, 0.0, velocity.z)
 
-	# Decide target per state (use safe setter to prevent ping-pong)
 	match state:
 		State.PATROL:
 			if not patrol_points.is_empty() and agent.is_navigation_finished():
 				idx = (idx + 1) % patrol_points.size()
 				_set_agent_target_safely(patrol_points[idx])
-
 		State.SUSPICIOUS:
 			var tgt := Vector3.ZERO
 			if investigateTarget != Vector3.ZERO:
@@ -104,15 +87,11 @@ func _physics_process(delta: float) -> void:
 				tgt = player.global_transform.origin
 			if tgt != Vector3.ZERO:
 				_set_agent_target_safely(tgt)
-
 		State.CHASE:
 			if player:
 				_set_agent_target_safely(player.global_transform.origin)
-
 		State.SEARCH:
-			# (you can add a ring/spiral here later)
 			pass
-
 		State.WANDER:
 			wander_timer -= delta
 			if wander_timer <= 0.0 or agent.is_navigation_finished():
@@ -120,23 +99,19 @@ func _physics_process(delta: float) -> void:
 				_set_agent_target_safely(wander_target)
 				wander_timer = wander_interval
 
-	# --- Task runner (sector/point investigate; runs alongside FSM) ---
 	if task_route.size() > 0:
-		var tgt = task_route[task_idx]
-		_set_agent_target_safely(tgt)
-		if global_transform.origin.distance_to(tgt) < 1.5:
-			# simple dwell ~2.5s at each point
+		var tgt2 = task_route[task_idx]
+		_set_agent_target_safely(tgt2)
+		if global_transform.origin.distance_to(tgt2) < 1.5:
 			if Time.get_unix_time_from_system() - _last_task_time >= 2.5:
 				_last_task_time = Time.get_unix_time_from_system()
 				task_idx += 1
 				if task_idx >= task_route.size():
 					task_route.clear()
 
-	# --- Movement (XZ intent + gravity on Y) ---
 	var next_pos = agent.get_next_path_position()
 	var to_next = next_pos - global_transform.origin
 	to_next.y = 0.0
-
 	if to_next.length() > 0.05:
 		var dir = to_next.normalized()
 		velocity.x = dir.x * move_speed
@@ -154,30 +129,23 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	# --- Smooth facing with lookahead & state turn boosts ---
 	var cand := Vector3.ZERO
-	# 1) CHASE → look at player
 	if state == State.CHASE and player:
 		cand = player.global_transform.origin - global_transform.origin
-	# 2) if moving, face velocity
 	if cand.length() < 0.01:
 		var vel2d = Vector3(velocity.x, 0.0, velocity.z)
 		if vel2d.length() > 0.05:
 			cand = vel2d
-	# 3) lookahead along path
 	if cand.length() < 0.01:
 		var np = agent.get_next_path_position()
 		var to_np = np - global_transform.origin
 		if to_np.length() > 0.01:
 			var step = min(lookahead_m, to_np.length())
-			cand = (to_np.normalized() * step)
-	# 4) target itself
+			cand = to_np.normalized() * step
 	if cand.length() < 0.01:
 		cand = agent.target_position - global_transform.origin
-	# 5) fallback: current forward
 	if cand.length() < 0.01:
 		cand = -facing.global_transform.basis.z
-
 	cand.y = 0.0
 	if cand.length() > 0.001:
 		cand = cand.normalized()
@@ -189,8 +157,7 @@ func _physics_process(delta: float) -> void:
 			turn_mul = susp_turn_boost
 		facing.rotation.y = lerp_angle(facing.rotation.y, target_yaw, (turn_speed * turn_mul) * delta)
 
-	label.text = ["PATROL","SUSPICIOUS","CHASE","SEARCH","WANDER"][state] \
-		+ "  S:" + str(snappedf(suspicion, 0.01))
+	label.text = ["PATROL","SUSPICIOUS","CHASE","SEARCH","WANDER"][state] + "  S:" + str(snappedf(suspicion, 0.01))
 
 func _perceive(delta):
 	var seen := false
@@ -201,10 +168,9 @@ func _perceive(delta):
 			var to_dir = to_p.normalized()
 			var ang_deg = rad_to_deg(acos(clampf(forward.dot(to_dir), -1.0, 1.0)))
 			if ang_deg <= fov * 0.5:
-				los.target_position = Vector3(0, 0, -losRange) # local forward
+				los.target_position = Vector3(0, 0, -losRange)
 				los.force_raycast_update()
 				seen = los.is_colliding() and los.get_collider() == player
-
 	if seen:
 		suspicion = clampf(suspicion + susRise * delta, 0.0, 1.0)
 		lastKnown = player.global_transform.origin
@@ -212,11 +178,7 @@ func _perceive(delta):
 	else:
 		suspicion = clampf(suspicion - susDecay * delta, 0.0, 1.0)
 		lostLosTimer += delta
-
-	# keep the flag used by the FSM in sync
 	player_in_cone = seen
-
-	# Optional: react to world alerts
 	for n in Blackboard.alerts:
 		var d = global_transform.origin.distance_to(n["pos"])
 		if d <= float(n["radius"]):
@@ -235,7 +197,6 @@ func _state_logic(delta: float) -> void:
 				suspicion = 1.0
 			elif suspicion > 0.35:
 				state = State.SUSPICIOUS
-
 		State.SUSPICIOUS:
 			if player_in_cone:
 				state = State.CHASE; suspicion = 1.0
@@ -245,13 +206,10 @@ func _state_logic(delta: float) -> void:
 				state = State.CHASE
 			elif suspicion <= 0.0:
 				state = State.WANDER
-
 		State.CHASE:
 			if not player_in_cone and lostLosTimer > losLoseGrace:
 				state = State.SEARCH
 				searchTtl = 8.0
-				# (optional) notify director of LKP here
-
 		State.SEARCH:
 			searchTtl -= delta
 			if player_in_cone:
@@ -260,14 +218,11 @@ func _state_logic(delta: float) -> void:
 				state = State.CHASE
 			elif searchTtl <= 0.0:
 				state = State.WANDER
-
 		State.WANDER:
 			if player_in_cone:
 				state = State.CHASE; suspicion = 1.0
 			elif suspicion > 0.35:
 				state = State.SUSPICIOUS
-
-# --- Helpers ---
 
 func _wait_navmap() -> void:
 	var rid := agent.get_navigation_map()
@@ -275,7 +230,6 @@ func _wait_navmap() -> void:
 		await get_tree().process_frame
 		rid = agent.get_navigation_map()
 	_nav_ok = true
-
 
 func _set_agent_target_safely(p: Vector3) -> void:
 	var rid := agent.get_navigation_map()
@@ -285,21 +239,16 @@ func _set_agent_target_safely(p: Vector3) -> void:
 	if agent.target_position.distance_to(p) > 0.75:
 		agent.target_position = p
 
-
 func get_random_nav_point() -> Vector3:
 	var rid := agent.get_navigation_map()
 	if not (rid.is_valid() and NavigationServer3D.map_get_iteration_id(rid) > 0):
 		return global_transform.origin
 	var origin := global_transform.origin
-	var rand_dir := Vector3(
-		randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0)
-	).normalized() * randf_range(5.0, wander_radius)
+	var rand_dir := Vector3(randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0)).normalized() * randf_range(5.0, wander_radius)
 	var candidate := origin + rand_dir
 	var p := NavigationServer3D.map_get_closest_point(rid, candidate)
 	return p if p != Vector3.INF else origin
 
-
-# Vision cone signals (optional extra sensor)
 func _on_vision_cone_3d_body_sighted(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		player_in_cone = true
@@ -308,7 +257,6 @@ func _on_vision_cone_3d_body_hidden(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		player_in_cone = false
 
-# Task API (so the director can drive this guard)
 func is_busy() -> bool:
 	return state == State.CHASE or state == State.SEARCH or task_route.size() > 0
 
@@ -317,7 +265,7 @@ func get_last_task_time() -> float:
 
 func set_task_investigate_sector(sid: int) -> void:
 	task_route.clear()
-	for k in 5:
+	for k in range(5):
 		var p = Sector.random_point_in(sid)
 		if task_route.is_empty() or task_route.back().distance_to(p) > 5.0:
 			task_route.append(p)

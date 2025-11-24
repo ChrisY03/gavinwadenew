@@ -99,7 +99,13 @@ func tick_dispatch(_elapsed: float) -> void:
 		for i in range(min(squad_size, candidates.size())):
 			if budget <= 0: break
 			var g = candidates[i]
-			g.set_task_investigate_sector(sid)
+			var pts: Array[Vector3] = []
+			for j in range(5):
+				var p: Vector3 = Sector.random_point_in(sid)   # or Sectorizer.random_point_in
+				if pts.is_empty() or pts.back().distance_to(p) > 5.0:
+					pts.append(p)
+			g.set_task_investigate_sector_points(pts)
+
 			assigned.append(g)
 			budget -= 1
 		if assigned.size() > 0:

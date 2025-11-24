@@ -31,18 +31,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.517967, 23.11819, -75.0872
 [node name="Guard5" parent="." instance=ExtResource("3_hprc1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.57779, 25, -65.92691)
 
-[node name="Guard6" parent="." instance=ExtResource("3_hprc1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.57779, 24, -66.92691)
-
-[node name="Guard7" parent="." instance=ExtResource("3_hprc1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -63.059822, 23.11819, -2.6073341)
-
-[node name="Guard8" parent="." instance=ExtResource("3_hprc1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39, 25, 6.552986)
-
-[node name="Guard9" parent="." instance=ExtResource("3_hprc1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43, 24, 5.552986)
-
 [node name="SectorBounds" parent="." instance=ExtResource("2_d4l1i")]
 
 [editable path="Terrrain"]
