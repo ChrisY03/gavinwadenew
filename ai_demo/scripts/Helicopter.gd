@@ -30,7 +30,6 @@ var player: Node3D = null
 var rng := RandomNumberGenerator.new()
 var current_target_index := 0
 var random_target := Vector3.ZERO
-var debug_timer := 0.0
 
 
 func _ready() -> void:
@@ -49,7 +48,7 @@ func _ready() -> void:
 	else:
 		push_warning("You must assign spotlight_path in the inspector!")
 
-	# Setup first patrol target
+	# Setup initial patrol
 	if use_random_patrol:
 		_pick_new_random_target()
 	else:
@@ -66,7 +65,7 @@ func _physics_process(delta: float) -> void:
 
 
 # ===============================
-# MOVEMENT — RANDOM
+# RANDOM PATROL MOVEMENT
 # ===============================
 func _pick_new_random_target() -> void:
 	var x := rng.randf_range(min_x, max_x)
@@ -91,7 +90,7 @@ func _move_random(delta: float) -> void:
 
 
 # ===============================
-# MOVEMENT — WAYPOINTS
+# WAYPOINT PATROL MOVEMENT
 # ===============================
 func _move_waypoints(delta: float) -> void:
 	if patrol_points.is_empty(): return
@@ -115,7 +114,7 @@ func _move_waypoints(delta: float) -> void:
 
 
 # ===============================
-# SPOTLIGHT DETECTION
+# SPOTLIGHT DETECTION (FIXED)
 # ===============================
 func _check_spotlight_detection() -> void:
 	if spotlight == null or player == null:
@@ -127,13 +126,17 @@ func _check_spotlight_detection() -> void:
 	if dist > spotlight.spot_range:
 		return
 
-	var forward := -spotlight.global_transform.basis.z.normalized()
+	# FIXED DIRECTION:
+	# SpotLight3D shines along +Z — NOT -Z
+	var forward := spotlight.global_transform.basis.z.normalized()
+
 	var angle_rad := forward.angle_to(to_player.normalized())
 	var half_angle := deg_to_rad(spotlight.spot_angle * 0.5)
 
 	if angle_rad > half_angle:
 		return
 
+	# PLAYER IS INSIDE SPOTLIGHT CONE
 	if debug_print_detection:
 		print("🚨 Helicopter sees player at:", player.global_position)
 
@@ -151,7 +154,7 @@ func _notify_guards(player_pos: Vector3) -> void:
 		reported.x += rng.randf_range(-sighting_noise_radius, sighting_noise_radius)
 		reported.z += rng.randf_range(-sighting_noise_radius, sighting_noise_radius)
 
-	# Blackboard alert
+	# Blackboard
 	if Engine.has_singleton("Blackboard"):
 		Blackboard.add_noise(player_pos, sighting_noise_radius, 5.0)
 
