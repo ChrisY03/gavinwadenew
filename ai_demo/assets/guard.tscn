@@ -1,12 +1,12 @@
-[gd_scene load_steps=17 format=3 uid="uid://bkdeajec0vros"]
+[gd_scene load_steps=14 format=3 uid="uid://bkdeajec0vros"]
 
 [ext_resource type="Material" uid="uid://c4wwd83fnrqe4" path="res://materials/red.tres" id="1_6305i"]
 [ext_resource type="Script" uid="uid://cmgcelj1qxg8o" path="res://addons/tattomoosa.vision_cone_3d/src/VisionCone3D.gd" id="3_agl3b"]
 [ext_resource type="Script" uid="uid://6afiheyvybv7" path="res://scripts/GuardPercepition.gd" id="3_lngpj"]
+[ext_resource type="PackedScene" uid="uid://nme5b2i20thm" path="res://assets/player_detector.tscn" id="4_04nd2"]
 [ext_resource type="Script" uid="uid://sogqmn71hqf7" path="res://scripts/GuardController.gd" id="4_kssj1"]
 [ext_resource type="Script" uid="uid://bj8smv1165s0q" path="res://scripts/GuardMove.gd" id="5_04nd2"]
 [ext_resource type="Script" uid="uid://bhuvxkdwhokme" path="res://scripts/GuardTaskRunner.gd" id="6_f4dfr"]
-[ext_resource type="Script" uid="uid://pev72d7yx5px" path="res://assets/player_detector.gd" id="7_kssj1"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rtt6x"]
 
@@ -17,13 +17,6 @@ size = Vector3(0.7, 0.1, 0.3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ajgek"]
 albedo_color = Color(0, 0, 0, 1)
-
-[sub_resource type="SphereShape3D" id="SphereShape3D_04nd2"]
-radius = 2.5
-
-[sub_resource type="BoxMesh" id="BoxMesh_kssj1"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_04nd2"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_lngpj"]
 
@@ -81,38 +74,8 @@ billboard = 1
 font_size = 96
 outline_size = 2
 
-[node name="PlayerDetector" type="Area3D" parent="Facing"]
-transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 4.2156025e-09, 0, -0.048220873)
-script = ExtResource("7_kssj1")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Facing/PlayerDetector"]
-shape = SubResource("SphereShape3D_04nd2")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Facing/PlayerDetector"]
-visible = false
-mesh = SubResource("BoxMesh_kssj1")
-
-[node name="First Arm" type="Marker3D" parent="Facing/PlayerDetector"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14647388, 0, 2.4422321)
-
-[node name="Scale Displacer" type="Node3D" parent="Facing/PlayerDetector/First Arm"]
-transform = Transform3D(0.70710677, 6.181724e-08, -1.7182695, -8.742278e-08, 1, 0, -0.70710677, -6.181724e-08, -1.7182695, -1.0328615, 0, -3.453395)
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="Facing/PlayerDetector/First Arm/Scale Displacer"]
-transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, 0, -1.2397618)
-mesh = SubResource("BoxMesh_04nd2")
-skeleton = NodePath("../../..")
-
-[node name="First Arm2" type="Marker3D" parent="Facing/PlayerDetector"]
-transform = Transform3D(-4.3711385e-08, 0, -0.99999994, 0, 1, 0, 0.99999994, 0, -4.3711385e-08, -2.352314, 0, 0.14314973)
-
-[node name="Scale Displacer" type="Node3D" parent="Facing/PlayerDetector/First Arm2"]
-transform = Transform3D(0.7071066, 6.181722e-08, -1.8561549, -8.742278e-08, 1, 0, -0.7071066, -6.181722e-08, -1.8561549, -1.16, 0, -3.309)
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="Facing/PlayerDetector/First Arm2/Scale Displacer"]
-transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 1, 0, 0, -1.2397618)
-mesh = SubResource("BoxMesh_04nd2")
-skeleton = NodePath("../../..")
+[node name="PlayerDetector" parent="Facing" instance=ExtResource("4_04nd2")]
+transform = Transform3D(-1, 0, 1.509958e-07, 0, 1, 0, -1.509958e-07, 0, -1, 4.2156025e-09, 0, -0.048220873)
 
 [node name="Perception" type="Node3D" parent="."]
 script = ExtResource("3_lngpj")
@@ -132,4 +95,3 @@ surface_material_override/0 = SubResource("StandardMaterial3D_kssj1")
 [connection signal="body_hidden" from="Facing/VisionCone3D" to="Facing/VisionCone3D" method="_on_body_hidden"]
 [connection signal="body_sighted" from="Facing/VisionCone3D" to="." method="_on_vision_cone_3d_body_sighted"]
 [connection signal="body_sighted" from="Facing/VisionCone3D" to="Facing/VisionCone3D" method="_on_body_sighted"]
-[connection signal="body_entered" from="Facing/PlayerDetector" to="Facing/PlayerDetector" method="_on_body_entered"]
