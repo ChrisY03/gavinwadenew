@@ -1,11 +1,11 @@
-[gd_scene load_steps=11 format=3 uid="uid://bkdeajec0vros"]
+[gd_scene load_steps=13 format=3 uid="uid://bkdeajec0vros"]
 
 [ext_resource type="Material" uid="uid://c4wwd83fnrqe4" path="res://materials/red.tres" id="1_6305i"]
 [ext_resource type="Script" uid="uid://cmgcelj1qxg8o" path="res://addons/tattomoosa.vision_cone_3d/src/VisionCone3D.gd" id="3_agl3b"]
-[ext_resource type="Script" path="res://scripts/GuardPercepition.gd" id="3_lngpj"]
+[ext_resource type="Script" uid="uid://6afiheyvybv7" path="res://scripts/GuardPercepition.gd" id="3_lngpj"]
 [ext_resource type="Script" uid="uid://sogqmn71hqf7" path="res://scripts/GuardController.gd" id="4_kssj1"]
-[ext_resource type="Script" path="res://scripts/GuardMove.gd" id="5_04nd2"]
-[ext_resource type="Script" path="res://scripts/GuardTaskRunner.gd" id="6_f4dfr"]
+[ext_resource type="Script" uid="uid://bj8smv1165s0q" path="res://scripts/GuardMove.gd" id="5_04nd2"]
+[ext_resource type="Script" uid="uid://bhuvxkdwhokme" path="res://scripts/GuardTaskRunner.gd" id="6_f4dfr"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rtt6x"]
 
@@ -16,6 +16,12 @@ size = Vector3(0.7, 0.1, 0.3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ajgek"]
 albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_lngpj"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kssj1"]
+transparency = 1
+albedo_color = Color(0.6493946, 0.66728926, 0.36843082, 0.50980395)
 
 [node name="Guard" type="CharacterBody3D" groups=["guards"]]
 script = ExtResource("4_kssj1")
@@ -53,9 +59,11 @@ spot_range = 30.0
 spot_attenuation = 0.2
 spot_angle = 40.75
 
-[node name="VisionCone3D" type="Area3D" parent="Facing"]
+[node name="VisionCone3D" type="Area3D" parent="Facing" groups=["player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.596743, -0.936384)
 script = ExtResource("3_agl3b")
+angle = 62.476
+debug_draw = true
 
 [node name="Overhead" type="Node3D" parent="Facing"]
 
@@ -73,6 +81,11 @@ script = ExtResource("5_04nd2")
 
 [node name="TaskRunner" type="Node3D" parent="."]
 script = ExtResource("6_f4dfr")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
+mesh = SubResource("SphereMesh_lngpj")
+surface_material_override/0 = SubResource("StandardMaterial3D_kssj1")
 
 [connection signal="body_hidden" from="Facing/VisionCone3D" to="." method="_on_vision_cone_3d_body_hidden"]
 [connection signal="body_sighted" from="Facing/VisionCone3D" to="." method="_on_vision_cone_3d_body_sighted"]
