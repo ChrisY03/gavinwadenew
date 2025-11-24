@@ -53,6 +53,7 @@ func _physics_process(delta: float) -> void:
 
 	perception.tick(delta, player, self)
 
+	
 	_update_state(delta)
 	_drive_behavior(delta)
 	_run_tasks(delta)
@@ -146,7 +147,8 @@ func _drive_behavior(delta: float) -> void:
 			for i in range(5):
 				var dir := Vector3(randf_range(-1.0,1.0),0.0,randf_range(-1.0,1.0)).normalized() * randf_range(4.0, 10.0)
 				pts.append(lastKnown + dir)
-			tasks.set_sector_route(pts)
+				tasks.set_sector_route(pts)
+
 		State.WANDER:
 			wander_timer -= delta
 			sign_node.visible = false
@@ -155,6 +157,7 @@ func _drive_behavior(delta: float) -> void:
 				var p: Vector3 = mover.get_random_nav_point(wander_radius)
 				mover.set_target(p)
 				wander_timer = wander_interval
+		
 				
 
 
