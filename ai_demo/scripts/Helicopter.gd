@@ -18,7 +18,7 @@ signal player_spotted(player_position: Vector3)
 @export var flight_height: float = 40.0
 
 #
-# SPOTLIGHT DETECTION SETTINGS
+# SPOTLIGHT SETTINGS
 #
 @export var spotlight_path: NodePath
 @export var debug_print_detection: bool = true
@@ -26,29 +26,31 @@ signal player_spotted(player_position: Vector3)
 @export var sighting_noise_radius: float = 5.0
 
 var spotlight: SpotLight3D
-var player: Node3D = null
+var player: Node3D
 var rng := RandomNumberGenerator.new()
-var current_target_index := 0
-var random_target := Vector3.ZERO
+
+var current_target_index: int = 0
+var random_target: Vector3 = Vector3.ZERO
 
 
 func _ready() -> void:
 	rng.randomize()
 	set_physics_process(true)
 
+	# --- Load Player ---
 	player = get_tree().get_first_node_in_group("player") as Node3D
 	if player == null:
 		push_warning("No node in group 'player' found!")
 
-	# Load spotlight
+	# --- Load Spotlight ---
 	if spotlight_path != NodePath():
-		spotlight = get_node_or_null(spotlight_path)
+		spotlight = get_node_or_null(spotlight_path) as SpotLight3D
 		if spotlight == null:
-			push_warning("Spotlight path is invalid!")
+			push_warning("Invalid spotlight_path assignment!")
 	else:
-		push_warning("You must assign spotlight_path in the inspector!")
+		push_warning("spotlight_path is EMPTY in the Inspector!")
 
-	# Setup initial patrol
+	# Start patrol system
 	if use_random_patrol:
 		_pick_new_random_target()
 	else:
@@ -64,79 +66,79 @@ func _physics_process(delta: float) -> void:
 	_check_spotlight_detection()
 
 
-# ===============================
-# RANDOM PATROL MOVEMENT
-# ===============================
+# -------------------------------------------------------
+# RANDOM MOVEMENT
+# -------------------------------------------------------
 func _pick_new_random_target() -> void:
-	var x := rng.randf_range(min_x, max_x)
-	var z := rng.randf_range(min_z, max_z)
+	var x: float = rng.randf_range(min_x, max_x)
+	var z: float = rng.randf_range(min_z, max_z)
 	random_target = Vector3(x, flight_height, z)
 
 
 func _move_random(delta: float) -> void:
-	var dir := random_target - global_position
-	var dist := dir.length()
+	var dir: Vector3 = random_target - global_position
+	var dist: float = dir.length()
 
 	if dist > 0.2:
 		dir = dir.normalized()
 		global_position += dir * speed * delta
 
-		var flat := Vector3(dir.x, 0, dir.z)
+		var flat: Vector3 = Vector3(dir.x, 0, dir.z)
 		if flat.length() > 0.001:
-			var target_yaw := atan2(flat.x, flat.z)
-			rotation.y = lerp_angle(rotation.y, target_yaw, rotation_speed * delta)
+			var yaw: float = atan2(flat.x, flat.z)
+			rotation.y = lerp_angle(rotation.y, yaw, rotation_speed * delta)
 	else:
 		_pick_new_random_target()
 
 
-# ===============================
-# WAYPOINT PATROL MOVEMENT
-# ===============================
+# -------------------------------------------------------
+# WAYPOINT MOVEMENT
+# -------------------------------------------------------
 func _move_waypoints(delta: float) -> void:
 	if patrol_points.is_empty(): return
 
-	var t: Node3D = get_node_or_null(patrol_points[current_target_index])
+	var t: Node3D = get_node_or_null(patrol_points[current_target_index]) as Node3D
 	if t == null: return
 
-	var dir := t.global_position - global_position
-	var dist := dir.length()
+	var dir: Vector3 = t.global_position - global_position
+	var dist: float = dir.length()
 
 	if dist > 0.2:
 		dir = dir.normalized()
 		global_position += dir * speed * delta
 
-		var flat := Vector3(dir.x, 0, dir.z)
+		var flat: Vector3 = Vector3(dir.x, 0, dir.z)
 		if flat.length() > 0.001:
-			var target_yaw := atan2(flat.x, flat.z)
-			rotation.y = lerp_angle(rotation.y, target_yaw, rotation_speed * delta)
+			var yaw: float = atan2(flat.x, flat.z)
+			rotation.y = lerp_angle(rotation.y, yaw, rotation_speed * delta)
 	else:
 		current_target_index = (current_target_index + 1) % patrol_points.size()
 
 
-# ===============================
-# SPOTLIGHT DETECTION (FIXED)
-# ===============================
+# -------------------------------------------------------
+# SPOTLIGHT DETECTION
+# -------------------------------------------------------
 func _check_spotlight_detection() -> void:
 	if spotlight == null or player == null:
 		return
 
-	var to_player := player.global_position - spotlight.global_position
-	var dist := to_player.length()
+	var to_player: Vector3 = player.global_position - spotlight.global_position
+	var dist: float = to_player.length()
 
+	# Distance check
 	if dist > spotlight.spot_range:
 		return
 
-	# FIXED DIRECTION:
-	# SpotLight3D shines along +Z — NOT -Z
-	var forward := spotlight.global_transform.basis.z.normalized()
+	# Spotlight forward vector (spotlight looks DOWN its -Z direction normally)
+	var forward: Vector3 = -spotlight.global_transform.basis.z.normalized()
+	var angle_rad: float = forward.angle_to(to_player.normalized())
+	var half_angle: float = deg_to_rad(spotlight.spot_angle * 0.5)
 
-	var angle_rad := forward.angle_to(to_player.normalized())
-	var half_angle := deg_to_rad(spotlight.spot_angle * 0.5)
-
+	# Cone check
 	if angle_rad > half_angle:
 		return
 
-	# PLAYER IS INSIDE SPOTLIGHT CONE
+	# Detection SUCCESS
 	if debug_print_detection:
 		print("🚨 Helicopter sees player at:", player.global_position)
 
@@ -144,21 +146,21 @@ func _check_spotlight_detection() -> void:
 	_notify_guards(player.global_position)
 
 
-# ===============================
-# NOTIFY GUARDS & BLACKBOARD
-# ===============================
+# -------------------------------------------------------
+# GUARD ALERTING + BLACKBOARD
+# -------------------------------------------------------
 func _notify_guards(player_pos: Vector3) -> void:
-	var reported := player_pos
+	var reported: Vector3 = player_pos
 
 	if use_noisy_reports:
 		reported.x += rng.randf_range(-sighting_noise_radius, sighting_noise_radius)
 		reported.z += rng.randf_range(-sighting_noise_radius, sighting_noise_radius)
 
-	# Blackboard
+	# Blackboard (if used by your AI system)
 	if Engine.has_singleton("Blackboard"):
 		Blackboard.add_noise(player_pos, sighting_noise_radius, 5.0)
 
-	# Notify guards
+	# Notify guards with on_player_spotted()
 	for g in get_tree().get_nodes_in_group("guards"):
 		if g.has_method("on_player_spotted"):
 			g.on_player_spotted(reported)
