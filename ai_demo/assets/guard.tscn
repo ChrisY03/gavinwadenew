@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://bkdeajec0vros"]
+[gd_scene load_steps=15 format=3 uid="uid://bkdeajec0vros"]
 
 [ext_resource type="Material" uid="uid://c4wwd83fnrqe4" path="res://materials/red.tres" id="1_6305i"]
 [ext_resource type="Script" uid="uid://cmgcelj1qxg8o" path="res://addons/tattomoosa.vision_cone_3d/src/VisionCone3D.gd" id="3_agl3b"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://sogqmn71hqf7" path="res://scripts/GuardController.gd" id="4_kssj1"]
 [ext_resource type="Script" uid="uid://bj8smv1165s0q" path="res://scripts/GuardMove.gd" id="5_04nd2"]
 [ext_resource type="Script" uid="uid://bhuvxkdwhokme" path="res://scripts/GuardTaskRunner.gd" id="6_f4dfr"]
+[ext_resource type="Script" uid="uid://pev72d7yx5px" path="res://assets/player_detector.gd" id="7_kssj1"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rtt6x"]
 
@@ -22,6 +23,9 @@ albedo_color = Color(0, 0, 0, 1)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kssj1"]
 transparency = 1
 albedo_color = Color(0.6493946, 0.66728926, 0.36843082, 0.50980395)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_04nd2"]
+radius = 2.5
 
 [node name="Guard" type="CharacterBody3D" groups=["guards"]]
 script = ExtResource("4_kssj1")
@@ -87,5 +91,15 @@ transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0)
 mesh = SubResource("SphereMesh_lngpj")
 surface_material_override/0 = SubResource("StandardMaterial3D_kssj1")
 
+[node name="PlayerDetector" type="Area3D" parent="."]
+script = ExtResource("7_kssj1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerDetector"]
+shape = SubResource("SphereShape3D_04nd2")
+
 [connection signal="body_hidden" from="Facing/VisionCone3D" to="." method="_on_vision_cone_3d_body_hidden"]
+[connection signal="body_hidden" from="Facing/VisionCone3D" to="Facing/VisionCone3D" method="_on_body_hidden"]
 [connection signal="body_sighted" from="Facing/VisionCone3D" to="." method="_on_vision_cone_3d_body_sighted"]
+[connection signal="body_sighted" from="Facing/VisionCone3D" to="Facing/VisionCone3D" method="_on_body_sighted"]
+[connection signal="body_entered" from="PlayerDetector" to="." method="_on_player_detector_body_entered"]
+[connection signal="body_entered" from="PlayerDetector" to="PlayerDetector" method="_on_body_entered"]

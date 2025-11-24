@@ -419,3 +419,11 @@ class VisionTestProber:
 			end = p_end
 			shape_local_target = p_shape_local_target
 			collider = p_collider
+
+
+func _on_body_hidden(body: Node3D) -> void:
+	pass # Replace with function body.
+
+
+func _on_body_sighted(body: Node3D) -> void:
+	pass # Replace with function body.

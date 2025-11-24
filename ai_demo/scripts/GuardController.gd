@@ -207,3 +207,7 @@ func _on_vision_cone_3d_body_hidden(body: Node3D) -> void:
 
 func _on_vision_cone_3d_body_sighted(body: Node3D) -> void:
 	pass # Replace with function body.
+
+
+func _on_player_detector_body_entered(body: Node3D) -> void:
+	pass # Replace with function body.
