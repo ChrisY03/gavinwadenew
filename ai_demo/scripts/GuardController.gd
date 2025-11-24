@@ -29,12 +29,14 @@ var wander_timer := 0.0
 var _sign_timer: float = 0.0
 var _last_sign_state: int = -1
 
+var player_in_cone: bool = false
+
 func _ready() -> void:
 	add_to_group("guards")
 	for c in get_children():
 		if c is Marker3D and c.name.begins_with("WP"):
 			patrol_points.append(c.global_transform.origin)
-	player = get_tree().get_first_node_in_group("player")
+	player = get_tree().get_first_node_in_group("Player")
 	perception.player_seen.connect(_on_player_seen)
 	perception.player_visible.connect(_on_player_visible)
 	perception.player_lost.connect(_on_player_lost)
@@ -202,8 +204,15 @@ func _show_sign(txt: String, col: Color, dur: float, pop: bool = true) -> void:
 	tw.tween_callback(Callable(self, "_hide_sign"))
 
 func _on_vision_cone_3d_body_hidden(body: Node3D) -> void:
+	if body.is_in_group("player"):
+		print("Player left vision cone")
+		player_in_cone = false
 	pass # Replace with function body.
 
 
 func _on_vision_cone_3d_body_sighted(body: Node3D) -> void:
+	if body.is_in_group("player"):
+		print("Player entered vision cone")
+		player_in_cone = true
+	
 	pass # Replace with function body.
