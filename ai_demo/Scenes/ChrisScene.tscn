@@ -16,7 +16,7 @@ nav_region_path = NodePath("Terrrain/terrainobject/NavigationRegion3D")
 [node name="Guard" parent="." instance=ExtResource("3_hprc1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -63.059822, 23.11819, 57.83968)
 
-[node name="Player" parent="." instance=ExtResource("4_5ku3t")]
+[node name="Player" parent="." groups=["player"] instance=ExtResource("4_5ku3t")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46.45511, 19.486412, 48.661983)
 
 [node name="Guard2" parent="." instance=ExtResource("3_hprc1")]

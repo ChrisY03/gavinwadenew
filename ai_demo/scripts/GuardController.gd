@@ -165,3 +165,11 @@ func set_task_investigate_point(pos: Vector3, dwell_sec: float = 3.0) -> void:
 
 func clear_task_and_return_to_beat() -> void:
 	tasks.clear()
+
+
+func _on_vision_cone_3d_body_hidden(body: Node3D) -> void:
+	pass # Replace with function body.
+
+
+func _on_vision_cone_3d_body_sighted(body: Node3D) -> void:
+	pass # Replace with function body.
