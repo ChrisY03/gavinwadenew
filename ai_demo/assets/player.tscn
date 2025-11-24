@@ -6,7 +6,7 @@
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_p3dfa"]
 radius = 0.338273
-height = 1.49317
+height = 1.0341811
 
 [sub_resource type="BoxMesh" id="BoxMesh_d2t03"]
 
@@ -18,10 +18,11 @@ motion_mode = 1
 script = ExtResource("1_lq7p7")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.22949445, 0)
 shape = SubResource("CapsuleShape3D_p3dfa")
 
 [node name="Yaw" type="Node3D" parent="CharacterBody3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.23988414, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08147031, 0)
 
 [node name="Pitch" type="Node3D" parent="CharacterBody3D/Yaw"]
 
@@ -31,6 +32,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.23988414, 0)
 transform = Transform3D(0.145348, 0.0314287, -0.0527298, -0.0469181, 0.0973632, -0.163352, 0, 0.0427322, 0.410972, 0.153237, -0.333401, -0.433792)
 mesh = SubResource("BoxMesh_d2t03")
 skeleton = NodePath("../../../../..")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="CharacterBody3D/Yaw/Pitch/Camera3D"]
+follow_viewport_enabled = true
 
 [node name="PlayerNoise" type="Node3D" parent="." node_paths=PackedStringArray("player_body")]
 script = ExtResource("3_insbl")

@@ -11,8 +11,9 @@ enum State { PATROL, SUSPICIOUS, CHASE, SEARCH, WANDER }
 @onready var mover = $move
 @onready var perception = $Perception
 @onready var tasks = $TaskRunner
+@onready var overhead = $Facing/Overhead
 @onready var label: Label3D = $Facing/Label3D
-@onready var sign_node: Label3D = $Facing/Sign
+@onready var sign_node: Label3D = $Facing/Overhead/Sign
 
 
 var patrol_points: Array[Vector3] = []
@@ -25,6 +26,8 @@ var searchTtl := 0.0
 var investigateTarget := Vector3.ZERO
 var player: Node3D
 var wander_timer := 0.0
+var _sign_timer: float = 0.0
+var _last_sign_state: int = -1
 
 func _ready() -> void:
 	add_to_group("guards")
@@ -121,10 +124,20 @@ func _drive_behavior(delta: float) -> void:
 				tgt = player.global_transform.origin
 			if tgt != Vector3.ZERO:
 				mover.set_target(tgt)
+			if state == State.SUSPICIOUS and _last_sign_state != State.SUSPICIOUS:
+				_show_sign("?", Color(1.0, 0.9, 0.2), 1.0)  # yellow
+				_last_sign_state = State.SUSPICIOUS
+
 		State.CHASE:
 			if player:
 				mover.set_target(player.global_transform.origin)
+			if state == State.CHASE and _last_sign_state != State.CHASE:
+				_show_sign("!", Color(1.0, 0.25, 0.25), 0.8) # red
+				_last_sign_state = State.CHASE
+
 		State.SEARCH:
+			sign_node.visible = false
+			_last_sign_state = state
 			if tasks.is_busy():
 				return
 			var pts := []
@@ -134,10 +147,15 @@ func _drive_behavior(delta: float) -> void:
 			tasks.set_sector_route(pts)
 		State.WANDER:
 			wander_timer -= delta
+			sign_node.visible = false
+			_last_sign_state = state
 			if wander_timer <= 0.0 or mover.is_navigation_finished():
 				var p: Vector3 = mover.get_random_nav_point(wander_radius)
 				mover.set_target(p)
 				wander_timer = wander_interval
+				
+
+
 
 func _run_tasks(delta: float) -> void:
 	if tasks.is_busy():
@@ -165,3 +183,20 @@ func set_task_investigate_point(pos: Vector3, dwell_sec: float = 3.0) -> void:
 
 func clear_task_and_return_to_beat() -> void:
 	tasks.clear()
+
+func _show_sign(txt: String, col: Color, dur: float, pop: bool = true) -> void:
+	# set visuals
+	sign_node.text = txt
+	sign_node.modulate = col
+	sign_node.visible = true
+	_sign_timer = dur
+
+	var tw = create_tween()
+	if pop:
+		overhead.scale = Vector3.ONE * 0.6
+		tw.tween_property(overhead, "scale", Vector3.ONE, 0.15)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		
+	tw.tween_interval(dur)
+	tw.tween_property(sign_node, "modulate:a", 0.0, 0.25)
+	tw.tween_callback(Callable(self, "_hide_sign"))
