@@ -1,10 +1,16 @@
-[gd_scene load_steps=3 format=3 uid="uid://evsk5mog5okb"]
+[gd_scene load_steps=4 format=3 uid="uid://evsk5mog5okb"]
 
 [ext_resource type="PackedScene" uid="uid://dj0vxhttsyh6b" path="res://assets/terrrain.tscn" id="1_63dej"]
 [ext_resource type="PackedScene" uid="uid://bkdeajec0vros" path="res://assets/guard.tscn" id="2_j0s5e"]
+[ext_resource type="PackedScene" uid="uid://dts1rqcw4f4af" path="res://assets/player.tscn" id="3_yscmr"]
 
 [node name="Node3D" type="Node3D"]
 
 [node name="Terrrain" parent="." instance=ExtResource("1_63dej")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.16035652, 0)
 
 [node name="Guard" parent="." instance=ExtResource("2_j0s5e")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.1990895, 0)
+
+[node name="Player" parent="." instance=ExtResource("3_yscmr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4111907, 6.394783, 0)

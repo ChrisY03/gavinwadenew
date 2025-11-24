@@ -13,7 +13,7 @@ height = 1.0341811
 [node name="Player" type="Node3D"]
 script = ExtResource("1_674bt")
 
-[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+[node name="CharacterBody3D" type="CharacterBody3D" parent="." groups=["player"]]
 motion_mode = 1
 script = ExtResource("1_lq7p7")
 
