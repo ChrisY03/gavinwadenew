@@ -1,45 +1,36 @@
 extends Node3D
 
-@export var orbit_radius: float = 4.0
-@export var orbit_speed: float = 0.8
-@export var height: float = 2.0
+@export var orbit_radius: float = 6.0
+@export var orbit_speed: float = 1.0
+@export var orbit_height: float = 3.0
 
-var center: Vector3
-var angle: float = 0.0
-var bird: Node3D     # single bird model
+var angle := 0.0
+var birds_root: Node3D
 
-func _ready() -> void:
-	# Get the bird node
-	var birds_node: Node = get_node("Birds")
-	if birds_node == null:
-		push_error("BirdFlock ERROR: Could not find 'Birds' node!")
-		return
-	
-	# Use first (and only) child
-	bird = birds_node.get_child(0)
-	if bird == null:
-		push_error("BirdFlock ERROR: Birds has no children!")
-		return
-	
-	# Center of the idle orbit (the origin of the BirdFlock node)
-	center = global_position
-	
-	# Offset bird upward so it doesn't clip terrain
-	bird.global_position = center + Vector3(0, height, orbit_radius)
+func _ready():
+	birds_root = $Birds
 
+	if birds_root.get_child_count() == 0:
+		push_error("❌ No birds found under BirdFlock/Birds!")
+	else:
+		print("🕊 BirdFlock initialized with ", birds_root.get_child_count(), " birds.")
 
-func _physics_process(delta: float) -> void:
-	if bird == null:
-		return
-
+func _physics_process(delta):
 	angle += orbit_speed * delta
 
-	# Calculate circular orbit
-	var x = center.x + orbit_radius * cos(angle)
-	var z = center.z + orbit_radius * sin(angle)
-	var y = center.y + height
+	var center := global_position
 
-	bird.global_position = Vector3(x, y, z)
+	for bird in birds_root.get_children():
+		# --- Orbit position ---
+		var x = center.x + orbit_radius * cos(angle)
+		var z = center.z + orbit_radius * sin(angle)
+		var y = center.y + orbit_height
 
-	# face forward direction of orbit
-	bird.look_at(Vector3(center.x, y, center.z))
+		bird.global_position = Vector3(x, y, z)
+
+		# --- Make bird face toward movement direction ---
+		bird.look_at(center, Vector3.UP)
+
+		# --- FIX: rotate so the bird model's forward direction is correct ---
+		# If still sideways, try 180 or -90 instead
+		bird.rotate_y(deg_to_rad(90))
