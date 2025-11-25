@@ -10,7 +10,7 @@ height = 1.0341811
 
 [sub_resource type="BoxMesh" id="BoxMesh_d2t03"]
 
-[node name="Player" type="Node3D"]
+[node name="Player" type="Node3D" groups=["player"]]
 script = ExtResource("1_674bt")
 
 [node name="player" type="CharacterBody3D" parent="." groups=["player"]]

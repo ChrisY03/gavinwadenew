@@ -17,7 +17,7 @@ signal player_spotted(player_position: Vector3)
 @export var flight_height: float = 40.0
 
 # ===========================
-# RAYCAST DETECTION
+# RAYCAST DETECTION (optional)
 # ===========================
 @export var detector_pivot_path: NodePath
 var detector_pivot: Node3D
@@ -33,19 +33,17 @@ func _ready() -> void:
 	# Get player
 	player = get_tree().get_first_node_in_group("player")
 	if player == null:
-		push_warning("No player found in group 'player'!")
+		push_warning("⚠ No player found in group 'player'!")
 
-	# Load detector pivot
-	if detector_pivot_path == NodePath(""):
-		push_error("You MUST assign detector_pivot_path!")
-	else:
+	# Load detector pivot + raycast
+	if detector_pivot_path != NodePath(""):
 		detector_pivot = get_node_or_null(detector_pivot_path)
-		if detector_pivot == null:
-			push_error("DetectorPivot node NOT found!")
-		else:
+		if detector_pivot:
 			raycast = detector_pivot.get_node_or_null("RayCast3D")
 			if raycast == null:
-				push_error("RayCast3D is missing as a child of DetectorPivot!")
+				push_warning("⚠ DetectorPivot has no RayCast3D child!")
+		else:
+			push_warning("⚠ DetectorPivot path assigned but not found!")
 
 	if use_random_patrol:
 		_pick_new_random_target()
@@ -100,6 +98,19 @@ func _raycast_detect_player() -> void:
 		var collider = raycast.get_collider()
 
 		if collider == player:
-			print("🚨 Helicopter sees player at:", player.global_position)
+			print("🚨 Helicopter sees player via raycast:", player.global_position)
 			emit_signal("player_spotted", player.global_position)
-			return
+
+
+# ===========================
+# DETECTION VIA SPOTLIGHT CONE
+# ===========================
+func _on_detection_area_body_entered(body: Node3D) -> void:
+	if body.is_in_group("player"):
+		print("🚁 Helicopter spotlight detected the player!")
+		emit_signal("player_spotted", body.global_position)
+
+
+func _on_detection_area_body_exited(body: Node3D) -> void:
+	if body.is_in_group("player"):
+		print("Player left helicopter spotlight cone.")
