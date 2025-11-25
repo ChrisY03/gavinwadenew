@@ -171,6 +171,8 @@ func _physics_process(_delta: float) -> void:
 			_body_probe_data.erase(body)
 			continue
 		_probe_body(body)
+		
+
 
 func _get_bodies_to_probe_this_frame() -> Array: # Array[CollisionObject3D]:
 	var all_bodies := _body_probe_data.keys()

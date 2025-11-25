@@ -64,7 +64,13 @@ func _physics_process(delta: float) -> void:
 
 	mover.tick(delta, state, player)
 
-	label.text = ["PATROL","ALERT","CHASE"][state] + "  S:" + str(snappedf(suspicion, 0.01))
+	var state_text : String = ["PATROL","ALERT","CHASE"][state]
+	var susp_text : String = "  S:" + str(snappedf(suspicion, 0.01))
+	
+	if player_in_cone:
+		label.text = state_text + susp_text + "  [VC]"
+	else:
+		label.text = state_text + susp_text
 
 # --- Perception events raise/maintain suspicion (hard alert comes from threshold) ---
 func _on_player_seen(pos: Vector3) -> void:
@@ -219,4 +225,5 @@ func _on_vision_cone_3d_body_sighted(body: Node3D) -> void:
 	if body == player:
 		player_in_cone = true
 		state = State.CHASE
+		print("PLAYER IN VISION CONE")
 	pass # Replace with function body.
