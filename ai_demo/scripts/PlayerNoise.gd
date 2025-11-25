@@ -2,8 +2,7 @@
 extends Node3D
 
 @export var player_body: CharacterBody3D
-@export var foot_ray: RayCast3D
-@export var grass_audio: AudioStreamPlayer3D
+@export var grass_audio: AudioStreamPlayer
 
 
 var _grass_step_timer: float = 0.0
@@ -36,25 +35,22 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("whistle"):
 		Director.push_event("noise", player_body.global_transform.origin, 1.0)
 		print("Player whistled")
-		
-	if not foot_ray:
-		print("No foot_ray assigned")
-		return
+			
 	
-	if foot_ray.is_colliding():
-		_grass_step_timer -= delta
+	_grass_step_timer -= delta
 		
-		
+	var vel := player_body.velocity
+	vel.y = 0.0
+	var speed := vel.length()
 	
+	if speed > 0.1 and _grass_step_timer <= 0.0:
+		var step_interval := 0.30 if sprinting else 0.45
+		_grass_step_timer = step_interval
+							
+		Director.push_event("noise", player_body.global_transform.origin, 0.15)
 			
-		if _grass_step_timer <= 0.0 and player_body.velocity.length() > 1.0:
-			_grass_step_timer = 0.45
+		if grass_sounds.size() > 0:
+			grass_audio.stream = grass_sounds[randi() % grass_sounds.size()]
+			grass_audio.play()		
 			
-			Director.push_event("noise", player_body.global_transform.origin, 0.15)
-			
-			if grass_sounds.size() > 0:
-				grass_audio.stream = grass_sounds[randi() % grass_sounds.size()]
-				grass_audio.play()		
-		else:
-			print("FootRay NOT colliding")		
 	

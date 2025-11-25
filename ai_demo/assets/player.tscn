@@ -44,14 +44,10 @@ target_position = Vector3(0, -10, 0)
 debug_shape_custom_color = Color(0, 0, 0.58431375, 1)
 script = ExtResource("3_insbl")
 
-[node name="PlayerNoise" type="Node3D" parent="." node_paths=PackedStringArray("player_body", "foot_ray", "grass_audio")]
+[node name="PlayerNoise" type="Node3D" parent="." node_paths=PackedStringArray("player_body", "grass_audio")]
 script = ExtResource("3_insbl")
 player_body = NodePath("../player")
-foot_ray = NodePath("../player/FootRay")
 grass_audio = NodePath("GrassAudio")
 
-[node name="GrassAudio" type="AudioStreamPlayer3D" parent="PlayerNoise"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.54355, 0, 0)
+[node name="GrassAudio" type="AudioStreamPlayer" parent="PlayerNoise"]
 stream = ExtResource("4_rug40")
-max_distance = 20.0
-script = ExtResource("3_insbl")
