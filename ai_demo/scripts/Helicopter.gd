@@ -17,7 +17,7 @@ signal player_spotted(player_position: Vector3)
 @export var flight_height: float = 40.0
 
 # ===========================
-# RAYCAST DETECTION (optional)
+# RAYCAST DETECTION
 # ===========================
 @export var detector_pivot_path: NodePath
 var detector_pivot: Node3D
@@ -30,12 +30,12 @@ var random_target := Vector3.ZERO
 func _ready() -> void:
 	rng.randomize()
 
-	# Get player
+	# Load player
 	player = get_tree().get_first_node_in_group("player")
 	if player == null:
 		push_warning("⚠ No player found in group 'player'!")
 
-	# Load detector pivot + raycast
+	# Load detector pivot and raycast (optional)
 	if detector_pivot_path != NodePath(""):
 		detector_pivot = get_node_or_null(detector_pivot_path)
 		if detector_pivot:
@@ -43,8 +43,9 @@ func _ready() -> void:
 			if raycast == null:
 				push_warning("⚠ DetectorPivot has no RayCast3D child!")
 		else:
-			push_warning("⚠ DetectorPivot path assigned but not found!")
+			push_warning("⚠ DetectorPivot path was assigned but the node was not found!")
 
+	# Random patrol setup
 	if use_random_patrol:
 		_pick_new_random_target()
 
@@ -88,7 +89,7 @@ func _physics_process(delta: float) -> void:
 
 
 # ===========================
-# DETECTION VIA RAYCAST
+# OPTIONAL RAYCAST DETECTION
 # ===========================
 func _raycast_detect_player() -> void:
 	if raycast == null:
@@ -96,18 +97,26 @@ func _raycast_detect_player() -> void:
 
 	if raycast.is_colliding():
 		var collider = raycast.get_collider()
-
 		if collider == player:
 			print("🚨 Helicopter sees player via raycast:", player.global_position)
 			emit_signal("player_spotted", player.global_position)
 
 
 # ===========================
-# DETECTION VIA SPOTLIGHT CONE
+# SPOTLIGHT CONE DETECTION
 # ===========================
 func _on_detection_area_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		print("🚁 Helicopter spotlight detected the player!")
+
+		# Tell guards to investigate through the Blackboard
+		var bb = get_node("/root/Blackboard")
+		bb.add_noise(
+			body.global_position,  # Alert position
+			100.0,                 # Guards react within 100m
+			5.0                    # Alert lasts 5 seconds
+		)
+
 		emit_signal("player_spotted", body.global_position)
 
 
