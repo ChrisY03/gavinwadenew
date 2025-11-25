@@ -2,7 +2,7 @@
 extends Node
 
 # Tunables
-@export var cell_size: float = 50.0          # meters between sector centers
+@export var cell_size: float = 20.0          # meters between sector centers
 @export var accept_dist: float = 20.0        # max distance to nav to accept a sector
 
 # Grid state

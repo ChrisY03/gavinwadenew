@@ -142,11 +142,14 @@ func _drive_behavior(delta: float) -> void:
 			_last_sign_state = state
 			if tasks.is_busy():
 				return
-			var pts := []
+			var pts: Array[Vector3] = []
 			for i in range(5):
-				var dir := Vector3(randf_range(-1.0,1.0),0.0,randf_range(-1.0,1.0)).normalized() * randf_range(4.0, 10.0)
-				pts.append(lastKnown + dir)
-			tasks.set_sector_route(pts)
+				var dir: Vector3 = Vector3(
+					randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0)
+				).normalized() * randf_range(4.0, 10.0)
+				var p: Vector3 = lastKnown + dir
+				pts.append(p)
+			tasks.set_sector_route(pts)  # now Array[Vector3]
 		State.WANDER:
 			wander_timer -= delta
 			sign_node.visible = false

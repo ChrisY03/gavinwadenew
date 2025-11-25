@@ -1,0 +1,84 @@
+[gd_scene load_steps=11 format=3 uid="uid://hlpi6yw73pl"]
+
+[ext_resource type="Script" uid="uid://sogqmn71hqf7" path="res://scripts/GuardController.gd" id="1_khb5d"]
+[ext_resource type="Script" uid="uid://cmgcelj1qxg8o" path="res://addons/tattomoosa.vision_cone_3d/src/VisionCone3D.gd" id="3_n46ly"]
+[ext_resource type="Script" uid="uid://6afiheyvybv7" path="res://scripts/GuardPercepition.gd" id="4_4uogl"]
+[ext_resource type="Script" uid="uid://bj8smv1165s0q" path="res://scripts/GuardMove.gd" id="5_324aw"]
+[ext_resource type="Script" uid="uid://bhuvxkdwhokme" path="res://scripts/GuardTaskRunner.gd" id="6_a3gwo"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rtt6x"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kegum"]
+albedo_color = Color(0.1223133, 0.35863125, 1, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_33uwf"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_3ryrw"]
+size = Vector3(0.7, 0.1, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ajgek"]
+albedo_color = Color(0, 0, 0, 1)
+
+[node name="Guard" type="CharacterBody3D" groups=["guards"]]
+script = ExtResource("1_khb5d")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_rtt6x")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CollisionShape3D"]
+material_override = SubResource("StandardMaterial3D_kegum")
+mesh = SubResource("CapsuleMesh_33uwf")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="Facing" type="Node3D" parent="."]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, -0.048220873)
+
+[node name="Glasses" type="MeshInstance3D" parent="Facing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00641823, 0.585872, -0.380594)
+mesh = SubResource("BoxMesh_3ryrw")
+skeleton = NodePath("../../CollisionShape3D")
+surface_material_override/0 = SubResource("StandardMaterial3D_ajgek")
+
+[node name="Label3D" type="Label3D" parent="Facing"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.00152302, 1.15203, -0.00184846)
+text = "PATROL"
+
+[node name="RayCast3D" type="RayCast3D" parent="Facing"]
+transform = Transform3D(1, 0, 0, 0, 0.9999546, 0.009529327, 0, -0.009529327, 0.9999546, 0.00750935, 0.235567, -0.639258)
+
+[node name="SpotLight3D" type="SpotLight3D" parent="Facing"]
+transform = Transform3D(1, 0, 0, 0, 0.977787, 0.20960106, 0, -0.20960106, 0.977787, 0.010272254, 0.6538569, -0.5532597)
+light_color = Color(0.545348, 0.6728721, 0.9617235, 1)
+spot_range = 30.0
+spot_attenuation = -1.0
+spot_angle = 55.0
+
+[node name="VisionCone3D" type="Area3D" parent="Facing" groups=["player"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.038785e-08, 0.596743, -0.58878756)
+script = ExtResource("3_n46ly")
+angle = 100.0
+debug_draw = true
+vision_test_mode = 0
+
+[node name="Overhead" type="Node3D" parent="Facing"]
+
+[node name="Sign" type="Label3D" parent="Facing/Overhead"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3783088, 0)
+billboard = 1
+font_size = 96
+outline_size = 2
+
+[node name="Perception" type="Node3D" parent="."]
+script = ExtResource("4_4uogl")
+
+[node name="move" type="Node3D" parent="."]
+script = ExtResource("5_324aw")
+
+[node name="TaskRunner" type="Node3D" parent="."]
+script = ExtResource("6_a3gwo")
+
+[connection signal="body_hidden" from="Facing/VisionCone3D" to="." method="_on_vision_cone_3d_body_hidden"]
+[connection signal="body_hidden" from="Facing/VisionCone3D" to="Facing/VisionCone3D" method="_on_body_hidden"]
+[connection signal="body_sighted" from="Facing/VisionCone3D" to="." method="_on_vision_cone_3d_body_sighted"]
+[connection signal="body_sighted" from="Facing/VisionCone3D" to="Facing/VisionCone3D" method="_on_body_sighted"]

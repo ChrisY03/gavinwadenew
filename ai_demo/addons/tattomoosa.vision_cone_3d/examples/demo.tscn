@@ -52,8 +52,8 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_gv3ui"]
 _data = {
-"RESET": SubResource("Animation_gthqg"),
-"back_and_forth": SubResource("Animation_yavxk")
+&"RESET": SubResource("Animation_gthqg"),
+&"back_and_forth": SubResource("Animation_yavxk")
 }
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_vessb"]
@@ -73,6 +73,9 @@ size = Vector2(100, 100)
 
 [node name="Observer" parent="." instance=ExtResource("1_5m65v")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.875939, 9.98095)
+
+[node name="VisionCone3D" parent="Observer" index="0"]
+vision_test_mode = 0
 
 [node name="CollisionShape3D" parent="Observer" index="2"]
 disabled = true
@@ -135,14 +138,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.94763, 0.875939, -2.14264)
 curve = SubResource("Curve3D_5a4ia")
 
 [node name="PathFollow3D" type="PathFollow3D" parent="Observables/Path3D"]
-transform = Transform3D(-4.37113e-08, 0, -0.999999, 0, 1, 0, 0.999999, 0, -4.37113e-08, 0, 0, 0)
+transform = Transform3D(-4.3711346e-08, 0, -0.999999, 0, 1, 0, 0.999999, 0, -4.3711346e-08, 0, 0, 0)
 
 [node name="Observable7" parent="Observables/Path3D/PathFollow3D" instance=ExtResource("2_bfp2s")]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Observables/Path3D"]
 libraries = {
-"": SubResource("AnimationLibrary_gv3ui")
+&"": SubResource("AnimationLibrary_gv3ui")
 }
 autoplay = "back_and_forth"
 
@@ -151,14 +154,14 @@ transform = Transform3D(0.998659, 0, 0.0517608, 0, 1, 0, -0.0517608, 0, 0.998659
 curve = SubResource("Curve3D_5a4ia")
 
 [node name="PathFollow3D" type="PathFollow3D" parent="Observables/Path3D2"]
-transform = Transform3D(-4.37113e-08, 0, -0.999999, 0, 1, 0, 0.999999, 0, -4.37113e-08, 0, 0, 0)
+transform = Transform3D(-4.3711346e-08, 0, -0.999999, 0, 1, 0, 0.999999, 0, -4.3711346e-08, 0, 0, 0)
 
 [node name="Observable7" parent="Observables/Path3D2/PathFollow3D" instance=ExtResource("2_bfp2s")]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Observables/Path3D2"]
 libraries = {
-"": SubResource("AnimationLibrary_gv3ui")
+&"": SubResource("AnimationLibrary_gv3ui")
 }
 autoplay = "back_and_forth"
 
@@ -167,14 +170,14 @@ transform = Transform3D(0.595159, 0, 0.803608, 0, 1, 0, -0.803608, 0, 0.595159, 
 curve = SubResource("Curve3D_5a4ia")
 
 [node name="PathFollow3D" type="PathFollow3D" parent="Observables/Path3D3"]
-transform = Transform3D(-4.37113e-08, 0, -0.999999, 0, 1, 0, 0.999999, 0, -4.37113e-08, 0, 0, 0)
+transform = Transform3D(-4.3711346e-08, 0, -0.999999, 0, 1, 0, 0.999999, 0, -4.3711346e-08, 0, 0, 0)
 
 [node name="Observable7" parent="Observables/Path3D3/PathFollow3D" instance=ExtResource("2_bfp2s")]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Observables/Path3D3"]
 libraries = {
-"": SubResource("AnimationLibrary_gv3ui")
+&"": SubResource("AnimationLibrary_gv3ui")
 }
 autoplay = "back_and_forth"
 
@@ -183,14 +186,14 @@ transform = Transform3D(0.650469, 0, -0.759533, 0, 1, 0, 0.759533, 0, 0.650469, 
 curve = SubResource("Curve3D_5a4ia")
 
 [node name="PathFollow3D" type="PathFollow3D" parent="Observables/Path3D4"]
-transform = Transform3D(-4.37113e-08, 0, -0.999999, 0, 1, 0, 0.999999, 0, -4.37113e-08, 0, 0, 0)
+transform = Transform3D(-4.3711346e-08, 0, -0.999999, 0, 1, 0, 0.999999, 0, -4.3711346e-08, 0, 0, 0)
 
 [node name="Observable7" parent="Observables/Path3D4/PathFollow3D" instance=ExtResource("2_bfp2s")]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Observables/Path3D4"]
 libraries = {
-"": SubResource("AnimationLibrary_gv3ui")
+&"": SubResource("AnimationLibrary_gv3ui")
 }
 autoplay = "back_and_forth"
 
@@ -199,14 +202,14 @@ transform = Transform3D(0.851855, 0, -0.523778, 0, 1, 0, 0.523778, 0, 0.851855, 
 curve = SubResource("Curve3D_5a4ia")
 
 [node name="PathFollow3D" type="PathFollow3D" parent="Observables/Path3D5"]
-transform = Transform3D(-4.37113e-08, 0, -0.999999, 0, 1, 0, 0.999999, 0, -4.37113e-08, 0, 0, 0)
+transform = Transform3D(-4.3711346e-08, 0, -0.999999, 0, 1, 0, 0.999999, 0, -4.3711346e-08, 0, 0, 0)
 
 [node name="Observable7" parent="Observables/Path3D5/PathFollow3D" instance=ExtResource("2_bfp2s")]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Observables/Path3D5"]
 libraries = {
-"": SubResource("AnimationLibrary_gv3ui")
+&"": SubResource("AnimationLibrary_gv3ui")
 }
 autoplay = "back_and_forth"
 
