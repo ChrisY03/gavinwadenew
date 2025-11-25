@@ -92,6 +92,4 @@ mesh = SubResource("SphereMesh_lngpj")
 surface_material_override/0 = SubResource("StandardMaterial3D_kssj1")
 
 [connection signal="body_hidden" from="Facing/VisionCone3D" to="." method="_on_vision_cone_3d_body_hidden"]
-[connection signal="body_hidden" from="Facing/VisionCone3D" to="Facing/VisionCone3D" method="_on_body_hidden"]
 [connection signal="body_sighted" from="Facing/VisionCone3D" to="." method="_on_vision_cone_3d_body_sighted"]
-[connection signal="body_sighted" from="Facing/VisionCone3D" to="Facing/VisionCone3D" method="_on_body_sighted"]

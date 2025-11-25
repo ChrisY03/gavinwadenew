@@ -206,6 +206,7 @@ skeleton = NodePath("")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="terrainobject/NavigationRegion3D/Plane_001"]
 transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0.267649, 0)
+metadata/surface = "grass"
 
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="terrainobject/NavigationRegion3D/Plane_001/StaticBody3D"]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, -26.764893, 0)

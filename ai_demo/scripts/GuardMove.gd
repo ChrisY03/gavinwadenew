@@ -40,6 +40,7 @@ func set_target(p: Vector3) -> void:
 	if not (rid.is_valid() and NavigationServer3D.map_get_iteration_id(rid) > 0):
 		return
 	var cp := NavigationServer3D.map_get_closest_point(rid, p)
+	print("Requested:", p, " snapped to:", cp)
 	if agent.target_position.distance_to(cp) > 0.75:
 		agent.target_position = cp
 

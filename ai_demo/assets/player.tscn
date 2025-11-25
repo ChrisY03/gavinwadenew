@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://dts1rqcw4f4af"]
+[gd_scene load_steps=7 format=3 uid="uid://dts1rqcw4f4af"]
 
 [ext_resource type="Script" uid="uid://7avtnjfcwo82" path="res://assets/PlayerConcealment.gd" id="1_674bt"]
 [ext_resource type="Script" uid="uid://bfbthps3w0mrr" path="res://scripts/player_move.gd" id="1_lq7p7"]
 [ext_resource type="Script" uid="uid://x64ww5obhtjh" path="res://scripts/PlayerNoise.gd" id="3_insbl"]
+[ext_resource type="AudioStream" uid="uid://6p0u3mkc5x3d" path="res://assets/walking-on-grass-363353.mp3" id="4_rug40"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_p3dfa"]
 radius = 0.338273
@@ -37,6 +38,20 @@ skeleton = NodePath("../../../../..")
 [node name="CanvasLayer" type="CanvasLayer" parent="player/Yaw/Pitch/Camera3D"]
 follow_viewport_enabled = true
 
-[node name="PlayerNoise" type="Node3D" parent="." node_paths=PackedStringArray("player_body")]
+[node name="FootRay" type="RayCast3D" parent="player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+target_position = Vector3(0, -10, 0)
+debug_shape_custom_color = Color(0, 0, 0.58431375, 1)
+script = ExtResource("3_insbl")
+
+[node name="PlayerNoise" type="Node3D" parent="." node_paths=PackedStringArray("player_body", "foot_ray", "grass_audio")]
 script = ExtResource("3_insbl")
 player_body = NodePath("../player")
+foot_ray = NodePath("../player/FootRay")
+grass_audio = NodePath("GrassAudio")
+
+[node name="GrassAudio" type="AudioStreamPlayer3D" parent="PlayerNoise"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.54355, 0, 0)
+stream = ExtResource("4_rug40")
+max_distance = 20.0
+script = ExtResource("3_insbl")

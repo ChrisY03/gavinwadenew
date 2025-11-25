@@ -32,6 +32,7 @@ var wander_timer := 0.0
 var _sign_timer: float = 0.0
 var _last_sign_state: int = -1
 var alert_ttl := 0.0
+var player_in_cone: bool = false
 
 func _ready() -> void:
 	add_to_group("guards")
@@ -206,3 +207,16 @@ func _hide_sign() -> void:
 	overhead.scale = Vector3.ONE
 	_sign_timer = 0.0
 	_last_sign_state = -1
+
+
+func _on_vision_cone_3d_body_hidden(body: Node3D) -> void:
+	if body == player:
+		player_in_cone = false
+	pass # Replace with function body.
+
+
+func _on_vision_cone_3d_body_sighted(body: Node3D) -> void:
+	if body == player:
+		player_in_cone = true
+		state = State.CHASE
+	pass # Replace with function body.
