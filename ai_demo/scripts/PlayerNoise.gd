@@ -21,6 +21,8 @@ func _physics_process(delta: float) -> void:
 		if _sprint_heartbeat <= 0.0:
 			Director.push_event("noise", player_body.global_transform.origin, 0.25)
 			_sprint_heartbeat = 0.4
+			print("Player sprinting")
 
 	if Input.is_action_just_pressed("whistle"):
 		Director.push_event("noise", player_body.global_transform.origin, 1.0)
+		print("Player whistled")
