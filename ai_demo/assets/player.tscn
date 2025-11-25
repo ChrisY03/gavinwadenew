@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://7avtnjfcwo82" path="res://assets/PlayerConcealment.gd" id="1_674bt"]
 [ext_resource type="Script" uid="uid://bfbthps3w0mrr" path="res://scripts/player_move.gd" id="1_lq7p7"]
 [ext_resource type="Script" uid="uid://x64ww5obhtjh" path="res://scripts/PlayerNoise.gd" id="3_insbl"]
-[ext_resource type="AudioStream" uid="uid://6p0u3mkc5x3d" path="res://assets/walking-on-grass-363353.mp3" id="4_rug40"]
+[ext_resource type="AudioStream" uid="uid://6p0u3mkc5x3d" path="res://assets/sounds/walking-on-grass-363353.mp3" id="4_rug40"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_p3dfa"]
 radius = 0.338273
@@ -44,13 +44,19 @@ target_position = Vector3(0, -10, 0)
 debug_shape_custom_color = Color(0, 0, 0.58431375, 1)
 script = ExtResource("3_insbl")
 
-[node name="PlayerNoise" type="Node3D" parent="." node_paths=PackedStringArray("player_body", "grass_audio", "whistle_audio")]
+[node name="PlayerNoise" type="Node3D" parent="." node_paths=PackedStringArray("player_body", "grass_audio", "whistle_audio", "sprint_audio", "heartbeat_audio")]
 script = ExtResource("3_insbl")
 player_body = NodePath("../player")
 grass_audio = NodePath("GrassAudio")
 whistle_audio = NodePath("WhistleAudio")
+sprint_audio = NodePath("SprintAudio")
+heartbeat_audio = NodePath("HeartbeatAudio")
 
 [node name="GrassAudio" type="AudioStreamPlayer" parent="PlayerNoise"]
 stream = ExtResource("4_rug40")
 
 [node name="WhistleAudio" type="AudioStreamPlayer" parent="PlayerNoise"]
+
+[node name="SprintAudio" type="AudioStreamPlayer" parent="PlayerNoise"]
+
+[node name="HeartbeatAudio" type="AudioStreamPlayer" parent="PlayerNoise"]
