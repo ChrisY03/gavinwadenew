@@ -3,17 +3,21 @@ extends Node3D
 
 @export var player_body: CharacterBody3D
 @export var grass_audio: AudioStreamPlayer
+@export var whistle_audio: AudioStreamPlayer
 
 
 var _grass_step_timer: float = 0.0
 var grass_sounds: Array = []
 var _was_on_floor: bool = false
 var _sprint_heartbeat: float = 0.0
+var whistle_sound: AudioStream
 
 func _ready():
 	grass_sounds = [
 		load("res://assets/walking-on-grass-363353.mp3")
 	]
+	
+	whistle_sound = load("res://assets/black-ops-prop-hunt-whistle.mp3")
 
 func _physics_process(delta: float) -> void:
 	if player_body == null:
@@ -35,6 +39,10 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("whistle"):
 		Director.push_event("noise", player_body.global_transform.origin, 1.0)
 		print("Player whistled")
+		
+		if whistle_audio and whistle_sound:
+			whistle_audio.stream = whistle_sound
+			whistle_audio.play()
 			
 	
 	_grass_step_timer -= delta
