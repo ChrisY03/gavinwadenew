@@ -19,5 +19,9 @@ shape = SubResource("CylinderShape3D_gwamr")
 
 [node name="Sketchfab_Scene" parent="Birds" instance=ExtResource("1_ioyaa")]
 
+[node name="GroundCheck" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50, 0)
+target_position = Vector3(0, -200, 0)
+
 [connection signal="body_entered" from="TriggerArea" to="." method="_on_trigger_area_body_entered"]
 [connection signal="body_exited" from="TriggerArea" to="." method="_on_trigger_area_body_exited"]
