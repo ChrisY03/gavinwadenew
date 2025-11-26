@@ -53,9 +53,16 @@ func _physics_process(delta: float) -> void:
 func _on_player_seen(pos: Vector3) -> void:
 	last_known = pos
 	state = State.CHASE
+	
+	if Engine.has_singleton("Director"):
+		Director.push_event("lkp", pos)
 
 func _on_player_lost(pos: Vector3) -> void:
 	last_known = pos
+	# _update_state will transition to ALERT
+	last_known = pos
+	if Engine.has_singleton("Director"):
+		Director.push_event("lkp", pos)
 	# _update_state will transition to ALERT
 
 

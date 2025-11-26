@@ -28,28 +28,26 @@ func _physics_process(delta: float) -> void:
 	if player_body == null:
 		return
 
+	# --- Landing thump noise ---
 	var on_floor: bool = player_body.is_on_floor()
 	if (not _was_on_floor) and on_floor:
-		Director.push_event("noise", player_body.global_transform.origin, 0.8)
+		_push_noise(0.8)
 	_was_on_floor = on_floor
 
 	var sprinting: bool = Input.is_action_pressed("sprint")
-	
+
+	# --- Sprinting noise + audio ---
 	if sprinting:
 		_sprint_heartbeat -= delta
 		if _sprint_heartbeat <= 0.0:
-			Director.push_event("noise", player_body.global_transform.origin, 0.25)
+			_push_noise(0.25)
 			_sprint_heartbeat = 0.4
 			print("Player sprinting")
 
-		if Input.is_action_just_pressed("whistle"):
-			Director.push_event("noise", player_body.global_transform.origin, 1.0)
-			print("Player whistled")
-		
 		if sprint_audio and sprint_sound and not sprint_audio.playing:
 			sprint_audio.stream = sprint_sound
 			sprint_audio.play()
-		
+
 		if heartbeat_audio and heartbeat_sound and not heartbeat_audio.playing:
 			heartbeat_audio.stream = heartbeat_sound
 			heartbeat_audio.play()
@@ -57,27 +55,36 @@ func _physics_process(delta: float) -> void:
 		if sprint_audio and sprint_audio.playing:
 			sprint_audio.stop()
 		if heartbeat_audio and heartbeat_audio.playing:
-			heartbeat_audio.stop()		
-		
+			heartbeat_audio.stop()
+
+	# --- Whistle: noise + one-shot audio, independent of sprinting ---
+	if Input.is_action_just_pressed("whistle"):
+		_push_noise(1.0)
+		print("Player whistled")
 		if whistle_audio and whistle_sound:
 			whistle_audio.stream = whistle_sound
 			whistle_audio.play()
-			
-	
+
+	# --- Footstep noise + grass sounds ---
 	_grass_step_timer -= delta
-		
+
 	var vel := player_body.velocity
 	vel.y = 0.0
 	var speed := vel.length()
-	
+
 	if speed > 0.1 and _grass_step_timer <= 0.0:
 		var step_interval := 0.30 if sprinting else 0.45
 		_grass_step_timer = step_interval
-							
-		Director.push_event("noise", player_body.global_transform.origin, 0.15)
-			
-		if grass_sounds.size() > 0:
+
+		_push_noise(0.15)
+
+		if grass_sounds.size() > 0 and grass_audio:
 			grass_audio.stream = grass_sounds[randi() % grass_sounds.size()]
-			grass_audio.play()		
-			
-	
+			grass_audio.play()
+
+func _push_noise(weight: float) -> void:
+	if Engine.is_editor_hint():
+		return  # avoid calls while editing scenes
+
+	Director.push_event("noise", player_body.global_transform.origin, weight)
+	print("Noise event pushed at ", player_body.global_transform.origin, " weight=", weight)

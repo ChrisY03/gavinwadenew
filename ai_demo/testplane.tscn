@@ -30,8 +30,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.433359, 0.5686879, 1.92058
 
 [node name="Guard" parent="." instance=ExtResource("2_sxmwe")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.222933, 2.2192202, 0)
-move_speed = null
-turn_speed = null
-patrol_reached_radius = null
-patrol_idle_time = null
-alert_duration = null
