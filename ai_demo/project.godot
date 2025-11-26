@@ -21,6 +21,7 @@ Sector="*res://scripts/sectorizer.gd"
 Director="*res://scripts/AIDirector.gd"
 Main="*res://scripts/Main.gd"
 Blackboard="*res://scripts/Blackboard.gd"
+FlockManager="*res://scripts/FlockManager.gd"
 
 [editor]
 
