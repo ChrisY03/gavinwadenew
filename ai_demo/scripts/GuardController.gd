@@ -167,7 +167,7 @@ func _ensure_patrol_target(delta: float) -> void:
 
 	# Ask the Director singleton (autoload) for a new patrol point
 	if not Engine.has_singleton("Director"):
-		print("Guard: Director singleton NOT found - check Project")
+	
 		return
 
 	var p: Vector3 = Director.get_patrol_point()

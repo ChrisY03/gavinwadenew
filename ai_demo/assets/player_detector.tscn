@@ -14,7 +14,9 @@ transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0
 script = ExtResource("1_dby78")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0288695, 0)
 shape = SubResource("SphereShape3D_04nd2")
+debug_color = Color(0.15307575, 0.03349487, 0.003132602, 0.41960785)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 visible = false

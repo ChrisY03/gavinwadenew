@@ -31,6 +31,9 @@ extends CharacterBody3D
 @export var step_max_height: float = 0.4
 @export var floor_max_angle_deg: float = 46.0    # max walkable slope
 
+@export var max_health: int = 100
+var health: int = max_health
+
 var _snap_block: float = 0.0  # timer to prevent snap immediately after jump
 var _is_crouching: bool = false
 
@@ -161,3 +164,13 @@ func _process(delta: float) -> void:
 	if _acc >= 1.0:
 		#Director.tick_dispatch(_acc)
 		_acc = 0.0
+		
+func apply_damage(amount: int) -> void:
+	if health <= 0:
+		return # already dead
+		
+	health = max(health - amount, 0)
+	print("Player health:", health, "/", max_health)
+	
+	if health == 0:
+		print("PLAYER DIED")
