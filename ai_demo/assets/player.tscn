@@ -11,7 +11,7 @@ height = 1.0341811
 
 [sub_resource type="BoxMesh" id="BoxMesh_d2t03"]
 
-[node name="Player" type="Node3D" groups=["player"]]
+[node name="Player" type="Node3D"]
 script = ExtResource("1_674bt")
 
 [node name="player" type="CharacterBody3D" parent="." groups=["player"]]
@@ -19,7 +19,7 @@ motion_mode = 1
 script = ExtResource("1_lq7p7")
 pitch_min = -86.675
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="player"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="player" groups=["player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.22949445, 0)
 shape = SubResource("CapsuleShape3D_p3dfa")
 

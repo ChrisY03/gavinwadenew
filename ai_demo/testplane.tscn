@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3 uid="uid://bpmifbkuvcjme"]
+
+[ext_resource type="PackedScene" uid="uid://dts1rqcw4f4af" path="res://assets/player.tscn" id="1_c1lil"]
+[ext_resource type="PackedScene" uid="uid://hlpi6yw73pl" path="res://assets/GuardCopy.tscn" id="2_sxmwe"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_sxmwe"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_awhsr"]
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_sxmwe"]
+vertices = PackedVector3Array(1, 0, 1, -1, 0, 1, 1, 0, -1, -1, 0, -1)
+polygons = [PackedInt32Array(0, 1, 2), PackedInt32Array(1, 3, 2)]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
+mesh = SubResource("PlaneMesh_sxmwe")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D"]
+shape = SubResource("WorldBoundaryShape3D_awhsr")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="MeshInstance3D"]
+navigation_mesh = SubResource("NavigationMesh_sxmwe")
+
+[node name="Player" parent="." instance=ExtResource("1_c1lil")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.433359, 0.5686879, 1.9205832)
+
+[node name="Guard" parent="." instance=ExtResource("2_sxmwe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.222933, 2.2192202, 0)
+move_speed = null
+turn_speed = null
+patrol_reached_radius = null
+patrol_idle_time = null
+alert_duration = null

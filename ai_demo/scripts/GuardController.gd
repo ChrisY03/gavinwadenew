@@ -1,229 +1,171 @@
 extends CharacterBody3D
 
-@export var susDecay: float = 0.35
-@export var susRise: float = 0.8
-@export var losLoseGrace: float = 1.0
-@export var wander_interval: float = 3.0
-@export var wander_radius: float = 20.0
+# --- Simple movement params ---
+@export var move_speed: float = 4.0
+@export var turn_speed: float = 8.0
+@export var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity") as float
 
-# Soft/Hard alert tuning
-@export var soft_alert_time: float = 6.0
-@export var soft_thresh: float = 0.35
-@export var hard_thresh: float = 0.80
+@export var patrol_reached_radius: float = 1.5
+@export var patrol_idle_time: float = 2.0
 
+var patrol_target: Vector3 = Vector3.ZERO
+var patrol_has_target: bool = false
+var patrol_idle_timer: float = 0.0
+
+# --- Simple state machine ---
 enum State { PATROL, ALERT, CHASE }
-
-@onready var mover = $move
-@onready var perception = $Perception
-@onready var tasks = $TaskRunner
-@onready var overhead = $Facing/Overhead
-@onready var label: Label3D = $Facing/Label3D
-@onready var sign_node: Label3D = $Facing/Overhead/Sign
-
-var patrol_points: Array[Vector3] = []
-var patrol_idx := 0
 var state: State = State.PATROL
-var suspicion := 0.1
-var lastKnown := Vector3.ZERO
-var lostLosTimer := 0.0
-var investigateTarget := Vector3.ZERO
+
+@export var alert_duration: float = 3.0  # how long we stay ALERT after losing sight
+var _alert_timer: float = 0.0
+
+# --- References ---
+@onready var perception = $Perception
+@onready var label: Label3D = $Facing/Label3D
+
 var player: Node3D
-var wander_timer := 0.0
-var _sign_timer: float = 0.0
-var _last_sign_state: int = -1
-var alert_ttl := 0.0
-var player_in_cone: bool = false
+var last_known: Vector3 = Vector3.ZERO
+
 
 func _ready() -> void:
 	add_to_group("guards")
-	for c in get_children():
-		if c is Marker3D and c.name.begins_with("WP"):
-			patrol_points.append(c.global_transform.origin)
 
-	player = get_tree().get_first_node_in_group("player") # ensure your Player is in group "player"
+	player = get_tree().get_first_node_in_group("player")
 
+	# Hook seen/lost from perception
 	perception.player_seen.connect(_on_player_seen)
-	perception.player_visible.connect(_on_player_visible)
 	perception.player_lost.connect(_on_player_lost)
 
-	if patrol_points.is_empty():
-		wander_timer = 0.0
 
 func _physics_process(delta: float) -> void:
-	if not mover.ready_for_nav():
-		return
-
 	if player == null:
 		player = get_tree().get_first_node_in_group("player")
 
-	perception.tick(delta, player, self)
-
 	_update_state(delta)
-	_drive_behavior(delta)
-	_run_tasks(delta)
+	_update_movement(delta)
 
-	mover.tick(delta, state, player)
+	if label:
+		label.text = ["PATROL", "ALERT", "CHASE"][state]
 
-	var state_text : String = ["PATROL","ALERT","CHASE"][state]
-	var susp_text : String = "  S:" + str(snappedf(suspicion, 0.01))
-	
-	if player_in_cone:
-		label.text = state_text + susp_text + "  [VC]"
-	else:
-		label.text = state_text + susp_text
 
-# --- Perception events raise/maintain suspicion (hard alert comes from threshold) ---
+# --- Perception callbacks ----------------------------------------------------
+
 func _on_player_seen(pos: Vector3) -> void:
-	suspicion = 1.0
-	lastKnown = pos
-	lostLosTimer = 0.0
+	last_known = pos
 	state = State.CHASE
 
-func _on_player_visible(pos: Vector3) -> void:
-	suspicion = clampf(suspicion + susRise * get_physics_process_delta_time(), 0.0, 1.0)
-	lastKnown = pos
-	lostLosTimer = 0.0
-
 func _on_player_lost(pos: Vector3) -> void:
-	lastKnown = pos
+	last_known = pos
+	# _update_state will transition to ALERT
 
-# --- FSM (3 states: PATROL, ALERT, CHASE). Soft vs hard alert = suspicion thresholds ---
+
+# --- State machine -----------------------------------------------------------
+
 func _update_state(delta: float) -> void:
-	if not perception.is_visible():
-		suspicion = clampf(suspicion - susDecay * delta, 0.0, 1.0)
-		lostLosTimer += delta
-
-	# Any time we clearly see the player → CHASE immediately
 	if perception.is_visible():
+		# If we see the player at all, we chase.
 		state = State.CHASE
-		suspicion = 1.0
-		lostLosTimer = 0.0
-		return
+		_alert_timer = 0.0
+	else:
+		match state:
+			State.CHASE:
+				# Just lost sight -> go into ALERT
+				state = State.ALERT
+				_alert_timer = alert_duration
+
+			State.ALERT:
+				_alert_timer -= delta
+				if _alert_timer <= 0.0:
+					state = State.PATROL
+
+			State.PATROL:
+				# idle / patrol logic handled in movement
+				pass
+
+
+# --- Movement / facing -------------------------------------------------------
+
+func _update_movement(delta: float) -> void:
+	var vel := velocity
 
 	match state:
-		State.PATROL:
-			# Soft alert triggers: rising suspicion or a clue to check
-			if suspicion > soft_thresh or investigateTarget != Vector3.ZERO:
-				state = State.ALERT
-				alert_ttl = soft_alert_time
+		State.PATROL, State.ALERT:
+			_ensure_patrol_target(delta)
 
-		State.ALERT:
-			alert_ttl -= delta
-			# Escalate to hard alert (CHASE) if suspicion crosses hard threshold
-			if suspicion > hard_thresh:
-				state = State.CHASE
-				suspicion = 1.0
-				return
-			# Lost track long enough? keep alerting but decay to PATROL when TTL ends
-			if alert_ttl <= 0.0:
-				state = State.PATROL
-				investigateTarget = Vector3.ZERO
+			if patrol_has_target:
+				var target := patrol_target
+				var to_target := target - global_transform.origin
+				to_target.y = 0.0
 
-		State.CHASE:
-			# If we’ve lost LoS for a while, drop to soft alert at LKP
-			if lostLosTimer > losLoseGrace:
-				state = State.ALERT
-				alert_ttl = soft_alert_time
+				if to_target.length() > 0.05:
+					var dir := to_target.normalized()
+					vel.x = dir.x * move_speed
+					vel.z = dir.z * move_speed
 
-# --- Behavior driving per state ---
-func _drive_behavior(delta: float) -> void:
-	match state:
-		State.PATROL:
-			# If a task is active (e.g., director route) let it drive movement
-			if tasks.is_busy():
-				return
-			# Simple: cycle WPs if present; (swap to your dynamic patrol when ready)
-			if patrol_points.is_empty():
-				return
-			if mover.is_navigation_finished():
-				patrol_idx = (patrol_idx + 1) % patrol_points.size()
-				mover.set_target(patrol_points[patrol_idx])
-			_hide_sign()
-
-		State.ALERT:
-			# Follow a clue (investigateTarget) or last known position; tasks can also feed points
-			if tasks.is_busy():
-				return
-			var tgt := Vector3.ZERO
-			if investigateTarget != Vector3.ZERO:
-				tgt = investigateTarget
-			elif lastKnown != Vector3.ZERO:
-				tgt = lastKnown
-			if tgt != Vector3.ZERO:
-				mover.set_target(tgt)
-			if _last_sign_state != State.ALERT:
-				_show_sign("?", Color(1.0, 0.9, 0.2), 1.0)
-				_last_sign_state = State.ALERT
+					# Face patrol target
+					var look_target := Vector3(target.x, global_transform.origin.y, target.z)
+					look_at(look_target, Vector3.UP)
+				else:
+					vel.x = lerp(vel.x, 0.0, 0.25)
+					vel.z = lerp(vel.z, 0.0, 0.25)
+			else:
+				vel.x = lerp(vel.x, 0.0, 0.25)
+				vel.z = lerp(vel.z, 0.0, 0.25)
 
 		State.CHASE:
 			if player:
-				mover.set_target(player.global_transform.origin)
-			if _last_sign_state != State.CHASE:
-				_show_sign("!", Color(1.0, 0.25, 0.25), 0.8)
-				_last_sign_state = State.CHASE
+				var to_player := player.global_transform.origin - global_transform.origin
+				to_player.y = 0.0
+				var dist := to_player.length()
 
-# --- Tasks (sector routes / points) ---
-func _run_tasks(delta: float) -> void:
-	if not tasks.is_busy():
+				if dist > 0.1:
+					var dir := to_player.normalized()
+					vel.x = dir.x * move_speed
+					vel.z = dir.z * move_speed
+
+					# Face movement direction
+					var target_yaw := atan2(-dir.x, -dir.z)
+					rotation.y = lerp_angle(rotation.y, target_yaw, turn_speed * delta)
+				else:
+					vel.x = 0.0
+					vel.z = 0.0
+			else:
+				vel.x = 0.0
+				vel.z = 0.0
+
+	# Gravity
+	if not is_on_floor():
+		vel.y -= gravity * delta
+	else:
+		if vel.y > 0.0:
+			vel.y = 0.0
+		# tiny downward bias to stay snapped
+		vel.y -= gravity * delta * 0.1
+
+	velocity = vel
+	move_and_slide()
+
+
+func _ensure_patrol_target(delta: float) -> void:
+	# Already have a target and not there yet -> keep it
+	if patrol_has_target and global_transform.origin.distance_to(patrol_target) > patrol_reached_radius:
 		return
-	tasks.tick(delta, global_transform.origin)
-	var t: Variant = tasks.current_target()
-	if t is Vector3:
-		mover.set_target(t as Vector3)
 
-func is_busy() -> bool:
-	return state == State.CHASE or tasks.is_busy()
+	# Reached target: idle a bit, then pick a new sector
+	if patrol_has_target:
+		patrol_idle_timer -= delta
+		if patrol_idle_timer > 0.0:
+			return
+		patrol_has_target = false
 
-func get_last_task_time() -> float:
-	return tasks.get_last_task_time()
+	# Ask the Director singleton (autoload) for a new patrol point
+	if not Engine.has_singleton("Director"):
+		return
 
-func set_task_investigate_sector_points(points: Array[Vector3]) -> void:
-	tasks.set_sector_route(points)
-	if state == State.PATROL:
-		state = State.ALERT
-		alert_ttl = soft_alert_time
+	var p: Vector3 = Director.get_patrol_point()
+	if p == Vector3.ZERO:
+		return
 
-func set_task_investigate_point(pos: Vector3, dwell_sec: float = 3.0) -> void:
-	tasks.set_point_task(pos, dwell_sec)
-	if state == State.PATROL:
-		state = State.ALERT
-		alert_ttl = soft_alert_time
-
-func clear_task_and_return_to_beat() -> void:
-	tasks.clear()
-
-# --- Signs (! / ?) ---
-func _show_sign(txt: String, col: Color, dur: float, pop: bool = true) -> void:
-	sign_node.text = txt
-	sign_node.modulate = col
-	sign_node.visible = true
-	_sign_timer = dur
-
-	var tw = create_tween()
-	if pop:
-		overhead.scale = Vector3.ONE * 0.6
-		tw.tween_property(overhead, "scale", Vector3.ONE, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_interval(dur)
-	tw.tween_property(sign_node, "modulate:a", 0.0, 0.25)
-	tw.tween_callback(Callable(self, "_hide_sign"))
-
-func _hide_sign() -> void:
-	sign_node.visible = false
-	sign_node.modulate.a = 1.0
-	overhead.scale = Vector3.ONE
-	_sign_timer = 0.0
-	_last_sign_state = -1
-
-
-func _on_vision_cone_3d_body_hidden(body: Node3D) -> void:
-	if body == player:
-		player_in_cone = false
-	pass # Replace with function body.
-
-
-func _on_vision_cone_3d_body_sighted(body: Node3D) -> void:
-	if body == player:
-		player_in_cone = true
-		state = State.CHASE
-		print("PLAYER IN VISION CONE")
-	pass # Replace with function body.
+	patrol_target = p
+	patrol_has_target = true
+	patrol_idle_timer = patrol_idle_time

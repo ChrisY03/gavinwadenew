@@ -1,120 +1,68 @@
+# AIDirector.gd
 extends Node
 class_name AIDirector
 
-@export var heat_decay: float = 0.85
-@export var hot_threshold: float = 0.25
-@export var sector_cooldown_sec: float = 5.0
-@export var max_squads: int = 2
-@export var squad_size: int = 2
-@export var min_reassign_sec: float = 4.0
+@export var heat_decay_per_sec: float = 0.2   # how fast heat cools per second
+@export var hot_threshold: float = 0.5        # sectors with >= this are “interesting”
 
-var sector_heat: PackedFloat32Array = PackedFloat32Array()
-var sector_cooldown: PackedFloat32Array = PackedFloat32Array()
-var _assignments: Dictionary = {}        # sector_id -> Array[Node]
+func _process(delta: float) -> void:
+	# Cool all sectors every frame
+	Sector.cool_all(heat_decay_per_sec, delta)
 
-# Call once after the Sectorizer has built its grid.
 func init_for_current_map() -> void:
-	var n: int = Sector.sector_count()   # swap to Sectors.* if that's your autoload name
-	sector_heat.resize(n)
-	sector_cooldown.resize(n)
-	for i in range(n):
-		sector_heat[i] = 0.0
-		sector_cooldown[i] = 0.0
-	_assignments.clear()
+	# If your Sector grid is already built elsewhere, you might not
+	# need to do anything here. This just satisfies older calls.
+	# You can expand this later if you want Director to do extra setup.
+	pass
 
+# Called when something happens (noise, last known pos, heli, etc.)
 func push_event(kind: String, pos: Vector3, weight: float = 1.0) -> void:
-	if Sector.sector_count() == 0:
-		return
-	var sid: int = Sector.sector_id_at(pos)
-	if sid < 0:
+	var sid := Sector.id_at(pos)
+	if sid == -1:
 		return
 
-	var w: float = 0.5
+	var base := 0.5
 	match kind:
-		"heli":
-			w = 1.0
-		"lkp":
-			w = 0.7
-		"noise":
-			w = 0.4
-		_:
-			w = 0.5
-	if kind == "noise":
-		if sid != -1:
-			Sector.bump_heat(sid, weight)
+		"heli":  base = 1.0
+		"lkp":   base = 0.7
+		"noise": base = 0.4
+		_:       base = 0.5
 
-	sector_heat[sid] += w * weight
-
-func tick_dispatch(_elapsed: float) -> void:
-	var now: float = Time.get_unix_time_from_system()
-
-	# Decay heat
-	for i in range(sector_heat.size()):
-		sector_heat[i] *= heat_decay
-		if sector_heat[i] < 0.001:
-			sector_heat[i] = 0.0
-
-	# Hot sectors (not cooling)
-	var hot: Array = []
-	for i in range(sector_heat.size()):
-		if sector_heat[i] >= hot_threshold and now >= sector_cooldown[i]:
-			hot.append(i)
-
-	# Clean assignments (remove deleted guards)
-	var to_delete: Array = []
-	for sid in _assignments.keys():
-		var arr: Array = _assignments[sid]
-		var kept: Array = []
-		for g in arr:
-			if is_instance_valid(g) and not g.is_queued_for_deletion():
-				kept.append(g)
-		if kept.is_empty():
-			to_delete.append(sid)
-		else:
-			_assignments[sid] = kept
-	for k in to_delete:
-		_assignments.erase(k)
-
-	var budget: int = max_squads - _assignments.size()
-	if budget <= 0:
-		return
-
-	# Assign nearest idle guard to each hot sector until budget runs out
-	var guards: Array = get_tree().get_nodes_in_group("guards")
-	for sid in hot:
-		if budget <= 0:
-			break
-		# pick up to squad_size nearest idle guards
-		var c: Vector3 = Sector.center(sid)
-		var candidates: Array = []
-		for g in guards:
-			if not is_instance_valid(g): continue
-			if g.is_busy(): continue
-			if now - g.get_last_task_time() < min_reassign_sec: continue
-			candidates.append(g)
-		# sort by distance
-		candidates.sort_custom(func(a, b):
-			var da: float = a.global_transform.origin.distance_squared_to(c)
-			var db: float = b.global_transform.origin.distance_squared_to(c)
-			return da < db
-		)
-		var assigned: Array = []
-		for i in range(min(squad_size, candidates.size())):
-			if budget <= 0: break
-			var g = candidates[i]
-			var pts: Array[Vector3] = []
-			for j in range(5):
-				var p: Vector3 = Sector.random_point_in(sid)   # or Sectorizer.random_point_in
-				if pts.is_empty() or pts.back().distance_to(p) > 5.0:
-					pts.append(p)
-			g.set_task_investigate_sector_points(pts)
-
-			assigned.append(g)
-			budget -= 1
-		if assigned.size() > 0:
-			_assignments[sid] = assigned
+	Sector.bump_heat(sid, base * weight)
 
 
-func mark_sector_cooldown(sid: int) -> void:
-	sector_cooldown[sid] = Time.get_unix_time_from_system() + sector_cooldown_sec
+func _get_hottest_sector() -> int:
+	var best_sid := -1
+	var best_heat := 0.0
+	var count := Sector.sector_count()
+
+	for sid in range(count):
+		var h := Sector.heat_of(sid)
+		if h >= hot_threshold and h > best_heat:
+			best_heat = h
+			best_sid = sid
+
+	return best_sid
+
+
+# What sector should a guard investigate/patrol now?
+func get_patrol_sector() -> int:
+	var sid := _get_hottest_sector()
+	if sid != -1:
+		return sid
+
+	var count := Sector.sector_count()
+	if count <= 0:
+		return -1
+
+	return randi() % count
+
+
+# Give a concrete world position for the guard to walk to
+func get_patrol_point() -> Vector3:
+	var sid := get_patrol_sector()
+	if sid == -1:
+		return Vector3.ZERO
+	return Sector.random_point_in(sid)
+
 	

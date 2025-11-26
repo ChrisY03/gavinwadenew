@@ -20,15 +20,10 @@ func _init_ai() -> void:
 	if debug_mmi_path != NodePath(""):
 		var mmi := get_node(debug_mmi_path) as MultiMeshInstance3D
 		Sector.debug_fill_multimesh(mmi)
-	get_tree().create_timer(1.0).timeout.connect(func ():
-		var guards := get_tree().get_nodes_in_group("guards")
-		if guards.size() > 0:
-			var pos := (guards[0] as Node3D).global_position + Vector3(8, 0, 0)
-			Director.push_event("noise", pos, 1.0)
-	)
+	
 
 func _process(delta: float) -> void:
 	_acc += delta
 	if _acc >= 1.0:
-		Director.tick_dispatch(_acc)
+		#Director.tick_dispatch(_acc)
 		_acc = 0.0

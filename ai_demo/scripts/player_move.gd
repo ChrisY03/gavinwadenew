@@ -127,5 +127,5 @@ var _acc := 0.0
 func _process(delta: float) -> void:
 	_acc += delta
 	if _acc >= 1.0:
-		Director.tick_dispatch(_acc)
+		#Director.tick_dispatch(_acc)
 		_acc = 0.0
