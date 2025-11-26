@@ -5,10 +5,6 @@
 [ext_resource type="PackedScene" uid="uid://boxa8qyw466xs" path="res://assets/sector_bounds.tscn" id="2_d4l1i"]
 [ext_resource type="PackedScene" uid="uid://dts1rqcw4f4af" path="res://assets/player.tscn" id="4_5ku3t"]
 
-[ext_resource type="PackedScene" uid="uid://nme5b2i20thm" path="res://assets/player_detector.tscn" id="6_5ku3t"]
-[ext_resource type="PackedScene" path="res://assets/GuardCopy.tscn" id="6_hprc1"]
-
-
 
 [node name="ChrisScene" type="Node3D"]
 script = ExtResource("1_d4l1i")
