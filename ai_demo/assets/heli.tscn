@@ -1,8 +1,9 @@
-[gd_scene load_steps=10 format=3 uid="uid://ceqkgqnynw557"]
+[gd_scene load_steps=11 format=3 uid="uid://ceqkgqnynw557"]
 
 [ext_resource type="Material" uid="uid://bjpg1ayxeeek1" path="res://materials/grey.tres" id="1_kydm2"]
 [ext_resource type="Script" uid="uid://crjetndse2yms" path="res://scripts/Helicopter.gd" id="2_gtk7b"]
 [ext_resource type="Script" uid="uid://bc32kei4pauw1" path="res://addons/tattomoosa.vision_cone_3d/src/ConeShape3D.gd" id="3_02v2t"]
+[ext_resource type="AudioStream" uid="uid://np0dwr81ita3" path="res://assets/sounds/Helicopter_sound.ogg" id="4_2do46"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_b7ogu"]
 radius = 1.028
@@ -106,5 +107,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 14, 0)
 
 [node name="WP8" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -14, 0)
+
+[node name="HelicopterSound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("4_2do46")
 
 [connection signal="body_entered" from="SearchLightPivot/DetectionArea" to="." method="_on_detection_area_body_entered"]

@@ -16,7 +16,6 @@ signal player_spotted(player_position: Vector3)
 @export var max_z: float = 50.0
 @export var flight_height: float = 40.0
 
-# Fix for forward direction (180° turns the model forward)
 @export var forward_offset_degrees: float = 180.0
 
 # ===========================
@@ -27,9 +26,18 @@ var detector_pivot: Node3D
 var raycast: RayCast3D
 var player: Node3D
 
+# ===========================
+# SOUND
+# ===========================
+var alert_sound: AudioStreamPlayer3D
+
 var rng := RandomNumberGenerator.new()
 var random_target := Vector3.ZERO
 
+
+# ===========================
+# READY
+# ===========================
 func _ready() -> void:
 	rng.randomize()
 
@@ -46,9 +54,14 @@ func _ready() -> void:
 			if raycast == null:
 				push_warning("⚠ DetectorPivot has no RayCast3D child!")
 		else:
-			push_warning("⚠ DetectorPivot path was assigned but the node was not found!")
+			push_warning("⚠ DetectorPivot path assigned but node not found!")
 
-	# Random patrol setup
+	# Load alert sound
+	alert_sound = get_node_or_null("HelicopterSound")
+	if alert_sound == null:
+		push_warning("⚠ No HelicopterSound (AudioStreamPlayer3D) found!")
+
+	# Start random patrol
 	if use_random_patrol:
 		_pick_new_random_target()
 
@@ -56,7 +69,7 @@ func _ready() -> void:
 
 
 # ===========================
-# PICK A NEW RANDOM TARGET
+# RANDOM TARGET
 # ===========================
 func _pick_new_random_target() -> void:
 	random_target = Vector3(
@@ -67,7 +80,7 @@ func _pick_new_random_target() -> void:
 
 
 # ===========================
-# MOVEMENT LOGIC
+# MOVEMENT
 # ===========================
 func _move_random(delta: float) -> void:
 	var dir := random_target - global_position
@@ -77,12 +90,10 @@ func _move_random(delta: float) -> void:
 		dir = dir.normalized()
 		global_position += dir * speed * delta
 
-		# Determine heading direction
 		var flat := Vector3(dir.x, 0, dir.z)
 		if flat.length() > 0.001:
 			var target_yaw := atan2(flat.x, flat.z)
 
-			# Apply corrected forward direction
 			rotation.y = lerp_angle(
 				rotation.y,
 				target_yaw + deg_to_rad(forward_offset_degrees),
@@ -103,7 +114,7 @@ func _physics_process(delta: float) -> void:
 
 
 # ===========================
-# RAYCAST PLAYER DETECTION
+# RAYCAST DETECTION
 # ===========================
 func _raycast_detect_player() -> void:
 	if raycast == null:
@@ -111,8 +122,12 @@ func _raycast_detect_player() -> void:
 
 	if raycast.is_colliding():
 		var collider = raycast.get_collider()
+
 		if collider == player:
 			print("🔦 Helicopter raycast sees player at:", player.global_position)
+
+			_play_alert_sound()
+
 			emit_signal("player_spotted", player.global_position)
 
 
@@ -123,12 +138,12 @@ func _on_detection_area_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		print("🚁 Helicopter spotlight detected the player!")
 
+		# Sound effect here
+		_play_alert_sound()
+
+		# Noise alert for guards
 		var bb = get_node("/root/Blackboard")
-		bb.add_noise(
-			body.global_position,  # Alert position
-			100.0,                 # Radius of effect
-			5.0                    # Time-to-live
-		)
+		bb.add_noise(body.global_position, 100.0, 5.0)
 
 		print("📢 Helicopter alert sent to guards.")
 		emit_signal("player_spotted", body.global_position)
@@ -137,3 +152,12 @@ func _on_detection_area_body_entered(body: Node3D) -> void:
 func _on_detection_area_body_exited(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		print("Player left helicopter spotlight.")
+
+
+# ===========================
+# PLAY SOUND (SAFE)
+# ===========================
+func _play_alert_sound():
+	# Prevent overlapping playback
+	if alert_sound and not alert_sound.playing:
+		alert_sound.play()
