@@ -24,10 +24,11 @@ size = Vector3(5.1517944, 1, 2.3793945)
 
 [node name="Guard" type="CharacterBody3D" groups=["guards"]]
 wall_min_slide_angle = 0.7853982
+floor_stop_on_slope = false
+floor_block_on_wall = false
 floor_max_angle = 1.2304571
 floor_snap_length = 0.0
 script = ExtResource("1_khb5d")
-gravity = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_rtt6x")
@@ -78,6 +79,7 @@ transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0.05
 [node name="Perception" type="Node3D" parent="."]
 script = ExtResource("4_4uogl")
 
+<<<<<<< HEAD
 [node name="PlayerHitZone" type="Area3D" parent="."]
 script = ExtResource("5_51nhs")
 
@@ -87,3 +89,8 @@ shape = SubResource("BoxShape3D_khb5d")
 
 [node name="DamageTimer" type="Timer" parent="PlayerHitZone"]
 wait_time = 0.5
+=======
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+keep_y_velocity = false
+debug_enabled = true
+>>>>>>> 8ffebf129bd292e8dfd29ed6abe9882629daf867

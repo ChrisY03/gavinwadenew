@@ -7,46 +7,45 @@
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_p3dfa"]
 radius = 0.338273
-height = 1.0341811
+height = 0.9487312
 
 [sub_resource type="BoxMesh" id="BoxMesh_d2t03"]
 
-[node name="Player" type="Node3D"]
-script = ExtResource("1_674bt")
-
-[node name="player" type="CharacterBody3D" parent="." groups=["player"]]
+[node name="player" type="CharacterBody3D" groups=["player"]]
 motion_mode = 1
 script = ExtResource("1_lq7p7")
 pitch_min = -86.675
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="player" groups=["player"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.22949445, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." groups=["player"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.27221942, 0)
 shape = SubResource("CapsuleShape3D_p3dfa")
 
-[node name="Yaw" type="Node3D" parent="player"]
+[node name="Yaw" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08147031, 0)
 
-[node name="Pitch" type="Node3D" parent="player/Yaw"]
+[node name="Pitch" type="Node3D" parent="Yaw"]
 
-[node name="Camera3D" type="Camera3D" parent="player/Yaw/Pitch"]
+[node name="Camera3D" type="Camera3D" parent="Yaw/Pitch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13307375, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="player/Yaw/Pitch/Camera3D"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Yaw/Pitch/Camera3D"]
 transform = Transform3D(0.145348, 0.0314287, -0.0527298, -0.0469181, 0.0973632, -0.163352, 0, 0.0427322, 0.410972, 0.153237, -0.333401, -0.433792)
 mesh = SubResource("BoxMesh_d2t03")
 skeleton = NodePath("../../../../..")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="player/Yaw/Pitch/Camera3D"]
+[node name="CanvasLayer" type="CanvasLayer" parent="Yaw/Pitch/Camera3D"]
 follow_viewport_enabled = true
 
-[node name="FootRay" type="RayCast3D" parent="player"]
+[node name="FootRay" type="RayCast3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 target_position = Vector3(0, -10, 0)
 debug_shape_custom_color = Color(0, 0, 0.58431375, 1)
 script = ExtResource("3_insbl")
 
 [node name="PlayerNoise" type="Node3D" parent="." node_paths=PackedStringArray("player_body", "grass_audio", "whistle_audio", "sprint_audio", "heartbeat_audio")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21030676, 0)
 script = ExtResource("3_insbl")
-player_body = NodePath("../player")
+player_body = NodePath("..")
 grass_audio = NodePath("GrassAudio")
 whistle_audio = NodePath("WhistleAudio")
 sprint_audio = NodePath("SprintAudio")
@@ -60,3 +59,6 @@ stream = ExtResource("4_rug40")
 [node name="SprintAudio" type="AudioStreamPlayer" parent="PlayerNoise"]
 
 [node name="HeartbeatAudio" type="AudioStreamPlayer" parent="PlayerNoise"]
+
+[node name="Player" type="Node3D" parent="."]
+script = ExtResource("1_674bt")
