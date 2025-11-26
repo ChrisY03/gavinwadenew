@@ -12,10 +12,10 @@ var angle := 0.0
 # ===========================
 # FLEE SETTINGS
 # ===========================
-@export var flee_distance: float = 20.0
+@export var flee_distance: float = 20.0      # minimum flee distance
 @export var flee_speed: float = 8.0
-@export var flee_height: float = 7.0     # how high they rise when fleeing
-@export var flee_duration: float = 4.0   # how long fleeing lasts
+@export var flee_height: float = 7.0
+@export var flee_duration: float = 4.0
 
 var flee_timer := 0.0
 var is_fleeing := false
@@ -44,9 +44,9 @@ func _ready():
 	birds_root = $Birds
 	trigger_area = $TriggerArea
 
-	base_height = global_position.y  # remember starting height
+	base_height = global_position.y
 
-	# Connect signals
+	# Connect triggers
 	trigger_area.body_entered.connect(_on_player_enter)
 	trigger_area.body_exited.connect(_on_player_exit)
 
@@ -55,8 +55,7 @@ func _ready():
 # PHYSICS
 # ===========================
 func _physics_process(delta):
-	# Always follow flock center
-	trigger_area.global_position = global_position
+	trigger_area.global_position = global_position  # follow flock
 
 	if is_fleeing:
 		_process_flee(delta)
@@ -65,7 +64,7 @@ func _physics_process(delta):
 
 
 # ===========================
-# ORBIT MOVEMENT
+# ORBIT BEHAVIOUR
 # ===========================
 func _process_orbit(delta):
 	angle += orbit_speed * delta
@@ -81,29 +80,30 @@ func _process_orbit(delta):
 
 
 # ===========================
-# START FLEE
+# START FLEE AWAY FROM PLAYER
 # ===========================
-func _start_flee_from(_player_pos: Vector3):
+func _start_flee_from(player_pos: Vector3):
 	if is_fleeing:
 		return
 
 	is_fleeing = true
 	flee_timer = flee_duration
 
-	var angle := randf() * TAU
+	# -------------------------------
+	# OPTION B — FLEE AWAY FROM PLAYER
+	# -------------------------------
+	var away := (global_position - player_pos).normalized()
 
-	# Random direction on the ground
-	flee_target = global_position + Vector3(
-		cos(angle) * flee_distance,
-		0,
-		sin(angle) * flee_distance
-	)
+	# Pick a random flee strength (20–60 meters)
+	var flee_strength := randf_range(flee_distance, flee_distance * 3.0)
+
+	flee_target = global_position + away * flee_strength
 
 	# Clamp to terrain
 	flee_target.x = clamp(flee_target.x, min_x, max_x)
 	flee_target.z = clamp(flee_target.z, min_z, max_z)
 
-	print("🕊 Birds fleeing toward:", flee_target)
+	print("🕊 Birds fleeing AWAY from player to:", flee_target)
 
 
 # ===========================
@@ -112,51 +112,42 @@ func _start_flee_from(_player_pos: Vector3):
 func _process_flee(delta):
 	flee_timer -= delta
 
-	# ----------------------
-	# END OF FLEE → LOWER FLOCK TO GROUND
-	# ----------------------
 	if flee_timer <= 0.0:
 		is_fleeing = false
-
-		print("🕊 Birds calming down. Returning to normal height.")
-
-		# ⭐ FIX: Restore original height
-		global_position.y = base_height
-
+		print("🕊 Birds calm again — returning to normal height.")
+		global_position.y = base_height  # restore height
 		return
 
-	# Flee movement target (slightly above flee target)
+	# Move flock toward target (with upward lift)
 	var target := flee_target + Vector3(0, flee_height, 0)
-
 	var dir: Vector3 = target - global_position
 
 	if dir.length() > 0.1:
 		dir = dir.normalized()
 		global_position += dir * flee_speed * delta
 
-	# Clamp to terrain
+	# Stay inside terrain
 	global_position.x = clamp(global_position.x, min_x, max_x)
 	global_position.z = clamp(global_position.z, min_z, max_z)
 
 
 # ===========================
-# PLAYER ENTER
+# TRIGGER: PLAYER ENTER
 # ===========================
 func _on_player_enter(body: Node3D):
 	if body.is_in_group("player"):
 		print("🟥 Bird flock detected the player!")
 
-		# Blackboard alert
+		# Blackboard message
 		var bb = get_node("/root/Blackboard")
 		bb.add_noise(global_position, 50.0, 5.0)
-
 		print("📣 Bird alert sent to guards.")
 
 		_start_flee_from(body.global_position)
 
 
 # ===========================
-# PLAYER EXIT
+# TRIGGER: PLAYER EXIT
 # ===========================
 func _on_player_exit(body: Node3D):
 	if body.is_in_group("player"):
