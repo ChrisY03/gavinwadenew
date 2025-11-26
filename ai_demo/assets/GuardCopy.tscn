@@ -19,10 +19,11 @@ albedo_color = Color(0, 0, 0, 1)
 
 [node name="Guard" type="CharacterBody3D" groups=["guards"]]
 wall_min_slide_angle = 0.7853982
+floor_stop_on_slope = false
+floor_block_on_wall = false
 floor_max_angle = 1.2304571
 floor_snap_length = 0.0
 script = ExtResource("1_khb5d")
-gravity = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_rtt6x")
@@ -69,3 +70,7 @@ metadata/_custom_type_script = "uid://cmgcelj1qxg8o"
 
 [node name="Perception" type="Node3D" parent="."]
 script = ExtResource("4_4uogl")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+keep_y_velocity = false
+debug_enabled = true

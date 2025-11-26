@@ -68,3 +68,21 @@ func get_patrol_point() -> Vector3:
 		sid = randi() % count
 
 	return Sector.random_point_in(sid)
+	
+func get_alert_search_route(last_known: Vector3, points_per_sector: int) -> Array[Vector3]:
+	var route: Array[Vector3] = []
+
+	var sid := Sector.id_at(last_known)
+	if sid == -1:
+		# Fallback: just search around the last-known position
+		route.append(last_known)
+		return route
+
+	# Always start at the exact last-known player position
+	route.append(last_known)
+
+	# Then add a few random points in that same sector
+	for i in range(points_per_sector):
+		route.append(Sector.random_point_in(sid))
+
+	return route
