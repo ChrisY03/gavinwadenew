@@ -16,6 +16,9 @@ signal player_spotted(player_position: Vector3)
 @export var max_z: float = 50.0
 @export var flight_height: float = 40.0
 
+# Fix for forward direction (180° turns the model forward)
+@export var forward_offset_degrees: float = 180.0
+
 # ===========================
 # RAYCAST DETECTION
 # ===========================
@@ -35,7 +38,7 @@ func _ready() -> void:
 	if player == null:
 		push_warning("⚠ No player found in group 'player'!")
 
-	# Load detector pivot and raycast (optional)
+	# Load detector pivot + raycast
 	if detector_pivot_path != NodePath(""):
 		detector_pivot = get_node_or_null(detector_pivot_path)
 		if detector_pivot:
@@ -53,7 +56,7 @@ func _ready() -> void:
 
 
 # ===========================
-# MOVEMENT — RANDOM
+# PICK A NEW RANDOM TARGET
 # ===========================
 func _pick_new_random_target() -> void:
 	random_target = Vector3(
@@ -62,6 +65,10 @@ func _pick_new_random_target() -> void:
 		rng.randf_range(min_z, max_z)
 	)
 
+
+# ===========================
+# MOVEMENT LOGIC
+# ===========================
 func _move_random(delta: float) -> void:
 	var dir := random_target - global_position
 	var dist := dir.length()
@@ -70,10 +77,17 @@ func _move_random(delta: float) -> void:
 		dir = dir.normalized()
 		global_position += dir * speed * delta
 
+		# Determine heading direction
 		var flat := Vector3(dir.x, 0, dir.z)
 		if flat.length() > 0.001:
 			var target_yaw := atan2(flat.x, flat.z)
-			rotation.y = lerp_angle(rotation.y, target_yaw, rotation_speed * delta)
+
+			# Apply corrected forward direction
+			rotation.y = lerp_angle(
+				rotation.y,
+				target_yaw + deg_to_rad(forward_offset_degrees),
+				rotation_speed * delta
+			)
 	else:
 		_pick_new_random_target()
 
@@ -89,7 +103,7 @@ func _physics_process(delta: float) -> void:
 
 
 # ===========================
-# OPTIONAL RAYCAST DETECTION
+# RAYCAST PLAYER DETECTION
 # ===========================
 func _raycast_detect_player() -> void:
 	if raycast == null:
@@ -98,28 +112,28 @@ func _raycast_detect_player() -> void:
 	if raycast.is_colliding():
 		var collider = raycast.get_collider()
 		if collider == player:
-			print("🚨 Helicopter sees player via raycast:", player.global_position)
+			print("🔦 Helicopter raycast sees player at:", player.global_position)
 			emit_signal("player_spotted", player.global_position)
 
 
 # ===========================
-# SPOTLIGHT CONE DETECTION
+# SPOTLIGHT AREA DETECTION
 # ===========================
 func _on_detection_area_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		print("🚁 Helicopter spotlight detected the player!")
 
-		# Tell guards to investigate through the Blackboard
 		var bb = get_node("/root/Blackboard")
 		bb.add_noise(
 			body.global_position,  # Alert position
-			100.0,                 # Guards react within 100m
-			5.0                    # Alert lasts 5 seconds
+			100.0,                 # Radius of effect
+			5.0                    # Time-to-live
 		)
 
+		print("📢 Helicopter alert sent to guards.")
 		emit_signal("player_spotted", body.global_position)
 
 
 func _on_detection_area_body_exited(body: Node3D) -> void:
 	if body.is_in_group("player"):
-		print("Player left helicopter spotlight cone.")
+		print("Player left helicopter spotlight.")

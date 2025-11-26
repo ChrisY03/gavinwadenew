@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="AI_Demo"
-run/main_scene="uid://dor8dpsn1s2hg"
+run/main_scene="uid://bidmscuak2djv"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
