@@ -17,3 +17,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.76252, 0)
 
 [node name="BirdFlock" parent="." instance=ExtResource("4_d4b07")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 6.7254972, 0)
+
+[node name="BirdFlock2" parent="." instance=ExtResource("4_d4b07")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, -40.06103, 21.643661, 59.874763)
+
+[node name="BirdFlock3" parent="." instance=ExtResource("4_d4b07")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 56.103634, 19.320084, 22.566452)
+
+[node name="BirdFlock4" parent="." instance=ExtResource("4_d4b07")]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 71.354, 10.178031, -67.564896)
