@@ -8,6 +8,7 @@ var angle := 0.0
 var birds_root: Node3D
 var trigger_area: Area3D
 
+
 func _ready():
 	birds_root = $Birds
 	trigger_area = $TriggerArea
@@ -18,10 +19,10 @@ func _physics_process(delta):
 
 	var center := global_position
 
-	# Keep TriggerArea positioned on the flock center
+	# Keep detection area centered on the flock
 	trigger_area.global_position = center
 
-	# Move each bird in an orbit pattern
+	# Move each bird in an orbit
 	for bird in birds_root.get_children():
 		var x = center.x + orbit_radius * cos(angle)
 		var z = center.z + orbit_radius * sin(angle)
@@ -32,13 +33,21 @@ func _physics_process(delta):
 		bird.rotate_y(deg_to_rad(90))
 
 
-# Called when something enters the flock's detection area
+# ---------------------------------------------------------------
+# Player ENTERS detection radius
+# ---------------------------------------------------------------
 func _on_trigger_area_body_entered(body):
-	if body.name == "Player":
-		print("🐦 Bird flock detected the PLAYER!")
+	print("Entered by: ", body.name)
+
+	if body.name == "player":
+		print("🐦 Bird flock detected the player!")
 
 
-# Called when something exits the flock's detection area (optional)
+# ---------------------------------------------------------------
+# Player LEAVES detection radius
+# ---------------------------------------------------------------
 func _on_trigger_area_body_exited(body):
-	if body.name == "Player":
-		print("🐦 Player LEFT the bird flock.")
+	print("Exited by: ", body.name)
+
+	if body.name == "player":
+		print("🐦 Player left the bird flock.")
