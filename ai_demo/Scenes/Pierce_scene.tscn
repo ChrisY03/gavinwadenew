@@ -17,7 +17,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.76252, 0)
 
 [node name="BirdFlock" parent="." instance=ExtResource("4_d4b07")]
 transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 6.7254972, 0)
-min_x = -100.0
-max_x = 100.0
-min_z = -100.0
-max_z = 100.0
