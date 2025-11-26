@@ -7,11 +7,15 @@ extends Node3D
 var angle := 0.0
 var birds_root: Node3D
 var trigger_area: Area3D
+var blackboard   # reference to the Blackboard singleton
 
 
 func _ready():
 	birds_root = $Birds
 	trigger_area = $TriggerArea
+
+	# Get the global Blackboard singleton
+	blackboard = get_node("/root/Blackboard")
 
 
 func _physics_process(delta):
@@ -22,7 +26,7 @@ func _physics_process(delta):
 	# Keep detection area centered on the flock
 	trigger_area.global_position = center
 
-	# Move each bird in an orbit
+	# Move each bird in orbit
 	for bird in birds_root.get_children():
 		var x = center.x + orbit_radius * cos(angle)
 		var z = center.z + orbit_radius * sin(angle)
@@ -37,17 +41,18 @@ func _physics_process(delta):
 # Player ENTERS detection radius
 # ---------------------------------------------------------------
 func _on_trigger_area_body_entered(body):
-	print("Entered by: ", body.name)
-
 	if body.name == "player":
 		print("🐦 Bird flock detected the player!")
+
+		# Birds create a noise alert in the blackboard
+		if blackboard:
+			blackboard.add_bird_alert(global_position)
+			print("📡 Bird alert sent to guards.")
 
 
 # ---------------------------------------------------------------
 # Player LEAVES detection radius
 # ---------------------------------------------------------------
 func _on_trigger_area_body_exited(body):
-	print("Exited by: ", body.name)
-
 	if body.name == "player":
 		print("🐦 Player left the bird flock.")

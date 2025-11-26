@@ -33,6 +33,10 @@ layers = 3
 material_override = ExtResource("1_kydm2")
 mesh = SubResource("CapsuleMesh_b7ogu")
 script = ExtResource("2_gtk7b")
+min_x = -100.0
+max_x = 100.0
+min_z = -100.0
+max_z = 100.0
 
 [node name="stem" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.831419, 0.223326)
