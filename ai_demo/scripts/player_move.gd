@@ -12,9 +12,14 @@ extends CharacterBody3D
 @onready var cam: Camera3D = $Yaw/Pitch/Camera3D
 
 # --- Movement (simple, consistent) ---
-@export var speed: float = 6.5             # walk speed
+@export var walk_speed: float = 6.5
+@export var sprint_speed: float = 10.0           # walk speed
 @export var accel: float = 30.0            # how fast we reach target speed
-@export var decel: float = 40.0            # how fast we slow when no input
+@export var decel: float = 40.0 
+
+@export var crouch_speed: float = 3.0
+@export var crouch_eye_height: float = 1.0
+@export var crouch_lerp: float = 10.0           # how fast we slow when no input
 
 # --- Jump / gravity ---
 @export var gravity: float = 24.0
@@ -27,6 +32,7 @@ extends CharacterBody3D
 @export var floor_max_angle_deg: float = 46.0    # max walkable slope
 
 var _snap_block: float = 0.0  # timer to prevent snap immediately after jump
+var _is_crouching: bool = false
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -57,6 +63,9 @@ func _unhandled_input(e: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	_snap_block = max(0.0, _snap_block - delta)
 
+	if Input.is_action_just_pressed("crouch"):
+		_is_crouching = not _is_crouching
+
 	# ---- Input (W forward) ----
 	var input_vec := Input.get_vector("move_left","move_right","move_back","move_forward")
 	var forward: Vector3 = -yaw.global_transform.basis.z
@@ -69,13 +78,36 @@ func _physics_process(delta: float) -> void:
 	var desired_dir: Vector3 = (right * input_vec.x + forward * input_vec.y)
 	if desired_dir.length() > 0.001:
 		desired_dir = desired_dir.normalized()
+		
+	var crouching := _is_crouching
+	var target_eye := crouch_eye_height if crouching else eye_height
+	var p := pitch.position
+	p.y = lerp(p.y, target_eye, crouch_lerp * delta)
+	pitch.position = p
 
 	# ---- Planar velocity (simple accel/decel toward desired) ----
 	var v: Vector3 = velocity
 	var v_planar: Vector3 = Vector3(v.x, 0.0, v.z)
-	var target_planar: Vector3 = desired_dir * speed
+	
+	var sprinting := Input.is_action_pressed("sprint") and input_vec.y > 0.0 and not crouching
+	if sprinting:
+		#print("SPRINTING")
+		pass
+		
+	var current_speed: float
+	if crouching:
+		current_speed = crouch_speed
+	elif sprinting:
+		current_speed = sprint_speed 
+	else:
+		current_speed = walk_speed
+	
+	var target_planar: Vector3 = desired_dir * current_speed
 
 	var gain: float = accel if desired_dir != Vector3.ZERO else decel
+	if sprinting and desired_dir != Vector3.ZERO:
+		gain *= 1.2
+	
 	v_planar = v_planar.move_toward(target_planar, gain * delta)
 
 	# Slide along floor normal to avoid pushing into ground on slopes
@@ -94,7 +126,7 @@ func _physics_process(delta: float) -> void:
 		if v.y < 0.0:
 			v.y = 0.0
 
-	if Input.is_action_just_pressed("jump") and is_on_floor():
+	if Input.is_action_just_pressed("jump") and is_on_floor() and not crouching:
 		v.y = jump_speed
 		_snap_block = jump_snap_block_time
 

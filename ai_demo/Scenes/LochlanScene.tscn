@@ -1,37 +1,36 @@
 [gd_scene load_steps=6 format=3 uid="uid://bidmscuak2djv"]
 
 [ext_resource type="PackedScene" uid="uid://dj0vxhttsyh6b" path="res://assets/terrrain.tscn" id="1_e2k3p"]
-[ext_resource type="PackedScene" uid="uid://bkdeajec0vros" path="res://assets/guard.tscn" id="2_f2788"]
 [ext_resource type="PackedScene" uid="uid://dts1rqcw4f4af" path="res://assets/player.tscn" id="3_qyhol"]
 [ext_resource type="PackedScene" uid="uid://ylggyhfgm3a7" path="res://bird_flock.tscn" id="4_qyhol"]
 [ext_resource type="PackedScene" uid="uid://ceqkgqnynw557" path="res://assets/heli.tscn" id="5_iye3s"]
+[ext_resource type="PackedScene" uid="uid://hlpi6yw73pl" path="res://assets/GuardCopy.tscn" id="5_qyhol"]
 
 [node name="LochlanScene" type="Node3D"]
 
 [node name="Terrrain" parent="." instance=ExtResource("1_e2k3p")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8992801, 0)
-
-[node name="Guard" parent="." instance=ExtResource("2_f2788")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6193662, 5.1990895, -3.3818989)
-
-[node name="Guard5" parent="." instance=ExtResource("2_f2788")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.1990895, 2.2607434)
-
-[node name="Guard4" parent="." instance=ExtResource("2_f2788")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6710653, 5.1990895, 1.9030726)
-
-[node name="Guard3" parent="." instance=ExtResource("2_f2788")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.1990895, -0.46152967)
-
-[node name="Guard2" parent="." instance=ExtResource("2_f2788")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.823743, 5.1990895, 0.19808912)
+transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="Player" parent="." instance=ExtResource("3_qyhol")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.133339, 5.602379, 2.9015992)
 
 [node name="BirdFlock" parent="." instance=ExtResource("4_qyhol")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 13.315228, 0)
+orbit_radius = null
+orbit_speed = null
+orbit_height = null
+flee_distance = null
+flee_speed = null
+flee_height = null
+flee_duration = null
+min_x = null
+max_x = null
+min_z = null
+max_z = null
 
 [node name="Helicopter" parent="." instance=ExtResource("5_iye3s")]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -1.4002304, 37.16327, 0)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 30, 0)
 skeleton = NodePath("../BirdFlock")
+
+[node name="Guard" parent="." instance=ExtResource("5_qyhol")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.9144855, 0)
