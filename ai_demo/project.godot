@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="AI_Demo"
-run/main_scene="uid://clmcwbjuyxhe0"
+run/main_scene="uid://dor8dpsn1s2hg"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -21,7 +21,6 @@ Sector="*res://scripts/sectorizer.gd"
 Director="*res://scripts/AIDirector.gd"
 Blackboard="*res://scripts/Blackboard.gd"
 Main="*res://scripts/Main.gd"
-FlockManager="*res://scripts/FlockManager.gd"
 
 [editor]
 
