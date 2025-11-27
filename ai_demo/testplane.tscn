@@ -1,23 +1,26 @@
 [gd_scene load_steps=6 format=3 uid="uid://bpmifbkuvcjme"]
 
 [ext_resource type="PackedScene" uid="uid://dts1rqcw4f4af" path="res://assets/player.tscn" id="1_c1lil"]
-[ext_resource type="PackedScene" uid="uid://c2hara3ig8d4y" path="res://assets/GuardReal.tscn" id="2_sxmwe"]
+[ext_resource type="PackedScene" uid="uid://hlpi6yw73pl" path="res://assets/GuardCopy.tscn" id="2_sxmwe"]
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_sxmwe"]
-vertices = PackedVector3Array(-24.5, 1, -24.5, -24.5, 1, 24.5, 24.5, 1, 24.5, 24.5, 1, -24.5)
+vertices = PackedVector3Array(-6.2875, 1, -6.5075, -6.2875, 1, 6.4925, 6.2125, 1, 6.4925, 6.2125, 1, -6.5075)
 polygons = [PackedInt32Array(3, 2, 0), PackedInt32Array(0, 2, 1)]
 cell_size = 0.5
 cell_height = 0.5
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_sxmwe"]
-size = Vector2(50, 50)
+size = Vector2(13.575, 14.015)
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_awhsr"]
 
 [node name="Node3D" type="Node3D"]
 
 [node name="Player" parent="." instance=ExtResource("1_c1lil")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.433359, 6.036244, 15.1864395)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.433359, 0.5686879, 1.9205832)
+
+[node name="Guard" parent="." instance=ExtResource("2_sxmwe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.222933, 2.2192202, 0)
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_sxmwe")
@@ -30,9 +33,3 @@ skeleton = NodePath("../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/MeshInstance3D/StaticBody3D"]
 shape = SubResource("WorldBoundaryShape3D_awhsr")
-
-[node name="Guard" parent="." instance=ExtResource("2_sxmwe")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.220966, 3.5061722, -2.3479013)
-
-[node name="Guard2" parent="." instance=ExtResource("2_sxmwe")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.4547825, 3.5061722, -2.3479013)

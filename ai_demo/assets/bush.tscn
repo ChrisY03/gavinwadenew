@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://ds1tf50mh0sxp"]
 
 [ext_resource type="Texture2D" uid="uid://dc7crcuj4knam" path="res://assets/PSX_Seamless_WildForestGrass_128px.png" id="1_ntfhk"]
-[ext_resource type="Script" uid="uid://cmyrg4byefa1q" path="res://scripts/CoverArea.gd" id="2_plhp5"]
+[ext_resource type="Script" uid="uid://cmyrg4byefa1q" path="res://scripts/ConcealmentArea.gd" id="2_plhp5"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iq27n"]
 albedo_texture = ExtResource("1_ntfhk")
@@ -10,7 +10,7 @@ albedo_texture = ExtResource("1_ntfhk")
 size = Vector3(2, 2, 1.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_brejn"]
-size = Vector3(3.679142, 2.4216003, 3.0880127)
+size = Vector3(3.118927, 1.8134766, 2.779541)
 
 [node name="Bush" type="Node3D" groups=["concel"]]
 
@@ -35,12 +35,12 @@ material_overlay = SubResource("StandardMaterial3D_iq27n")
 mesh = SubResource("BoxMesh_xlu8g")
 
 [node name="Area3D" type="Area3D" parent="." groups=["concel"]]
-transform = Transform3D(1, -1.4901161e-08, 2.9802322e-08, -2.9802322e-08, 1, 0, 0, -5.9604645e-08, 1.0000001, -0.15268254, -1.4901161e-08, 0.66827023)
+transform = Transform3D(1, -1.4901161e-08, 2.9802322e-08, -2.9802322e-08, 1, 0, 0, -5.9604645e-08, 1.0000001, 0, -1.4901161e-08, 7.450581e-09)
 collision_layer = 128
 script = ExtResource("2_plhp5")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
-transform = Transform3D(1, -2.1175824e-22, 0, 0, 1, 0, 0, 0, 1, 0.41044354, 0.48344424, -1.044007)
+transform = Transform3D(1, -2.1175824e-22, 0, 0, 1, 0, 0, 0, 1, 0.40376282, 0.5864258, -0.8897704)
 shape = SubResource("BoxShape3D_brejn")
 
 [connection signal="area_entered" from="Area3D" to="Area3D" method="_on_area_entered"]
