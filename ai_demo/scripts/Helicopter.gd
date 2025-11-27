@@ -43,7 +43,7 @@ func _ready() -> void:
 	# Load player
 	player = get_tree().get_first_node_in_group("player")
 	if player == null:
-		push_warning("⚠ No player found in group 'player'!")
+		push_warning(" No player found in group 'player'!")
 
 	# Load detector pivot + raycast
 	if detector_pivot_path != NodePath(""):
@@ -51,14 +51,14 @@ func _ready() -> void:
 		if detector_pivot:
 			raycast = detector_pivot.get_node_or_null("RayCast3D")
 			if raycast == null:
-				push_warning("⚠ DetectorPivot has no RayCast3D child!")
+				push_warning(" DetectorPivot has no RayCast3D child!")
 		else:
-			push_warning("⚠ DetectorPivot path assigned but node not found!")
+			push_warning(" DetectorPivot path assigned but node not found!")
 
 	# Load alert sound
 	alert_sound = get_node_or_null("HelicopterSound")
 	if alert_sound == null:
-		push_warning("⚠ No HelicopterSound (AudioStreamPlayer3D) found!")
+		push_warning(" No HelicopterSound (AudioStreamPlayer3D) found!")
 
 	# Start random patrol
 	if use_random_patrol:
@@ -130,14 +130,14 @@ func _raycast_detect_player() -> void:
 # ===========================
 func _on_detection_area_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player"):
-		print("🚁 Helicopter spotlight detected the player!")
+		print(" Helicopter spotlight detected the player!")
 
 		# Sound effect
 		_play_alert_sound()
 
 		# Noise alert for guards
 		var bb = get_node("/root/Blackboard")
-		bb.add_noise(body.global_position, 100.0, 5.0)
+		bb.add_noise(body.global_position, 100.0, 100)
 
 		print("📢 Helicopter alert sent to guards.")
 		emit_signal("player_spotted", body.global_position)
