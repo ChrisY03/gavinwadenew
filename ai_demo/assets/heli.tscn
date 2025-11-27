@@ -22,10 +22,10 @@ size = Vector3(0.8, 1.5, 1)
 size = Vector3(0.425, 0.37, 3.755)
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_2do46"]
-points = PackedVector3Array(40, -100, 0, 28.284271, -100, 28.284271, 2.4492127e-15, -100, 40, -28.284271, -100, 28.284271, -40, -100, 4.8984254e-15, -28.284271, -100, -28.284271, -7.347638e-15, -100, -40, 28.284271, -100, -28.284271, 0, 100, 0)
+points = PackedVector3Array(60, -100, 0, 42.426407, -100, 42.426407, 3.673819e-15, -100, 60, -42.426407, -100, 42.426407, -60, -100, 7.347638e-15, -42.426407, -100, -42.426407, -1.1021457e-14, -100, -60, 42.426407, -100, -42.426407, 0, 100, 0)
 script = ExtResource("3_02v2t")
 height = 200.0
-radius = 40.0
+radius = 60.0
 metadata/_custom_type_script = "uid://bc32kei4pauw1"
 
 [node name="Helicopter" type="MeshInstance3D"]
@@ -75,7 +75,7 @@ shadow_enabled = true
 shadow_bias = 0.05
 spot_range = 200.0
 spot_attenuation = 0.6
-spot_angle = 10.0
+spot_angle = 18.824682
 
 [node name="DetectionArea" type="Area3D" parent="SearchLightPivot"]
 transform = Transform3D(1, 0, 0, 0, -4.3711392e-08, 1, 0, -1, -4.3711392e-08, 0, 0, 0)
@@ -110,5 +110,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -14, 0)
 
 [node name="HelicopterSound" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("4_2do46")
+unit_size = 60.0
 
 [connection signal="body_entered" from="SearchLightPivot/DetectionArea" to="." method="_on_detection_area_body_entered"]

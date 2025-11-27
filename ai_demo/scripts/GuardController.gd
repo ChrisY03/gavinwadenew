@@ -10,18 +10,17 @@ extends CharacterBody3D
 @export var patrol_idle_time: float = 2.0
 
 # --- Alert params ---
-@export var alert_reached_radius: float = 2.0      # how close to LKP counts as "arrived"
-@export var alert_scan_time: float = 3.0           # how long to stand & scan
+@export var alert_reached_radius: float = 2.0      # how close to search point counts as "arrived"
+@export var alert_scan_time: float = 3.0           # how long to stand & scan at each point
 @export var alert_scan_speed_deg: float = 30.0     # degrees/sec while scanning
+@export var alert_max_time: float = 12.0           # total time to stay in ALERT
+@export var alert_points_per_sector: int = 4       # how many extra points in that sector
 
-@export var alert_max_time: float = 12.0        # total time to stay in ALERT
-@export var alert_points_per_sector: int = 4    # how many extra points in that sector
-
-var _alert_search_points: Array[Vector3] = []
-var _alert_search_idx: int = 0
-var _alert_total_timer: float = 0.0
-var _alert_scanning: bool = false
-var _alert_scan_timer: float = 0.0
+# --- Local hearing params ---
+@export var hear_radius_walk: float = 4.0
+@export var hear_radius_sprint: float = 7.0
+@export var hear_walk_speed_thresh: float = 1.5    # tweak to match your player walking speed
+@export var hear_sprint_speed_thresh: float = 4.0  # tweak to match sprint speed
 
 # --- Chase retarget params ---
 @export var chase_retarget_interval: float = 0.2   # seconds
@@ -33,7 +32,7 @@ var state: State = State.PATROL
 
 # --- References ---
 @onready var agent: NavigationAgent3D = $NavigationAgent3D
-@onready var perception = $Perception
+@onready var perception: Node = $Perception
 @onready var label: Label3D = $Facing/Label3D
 
 var player: Node3D
@@ -44,10 +43,13 @@ var patrol_target: Vector3 = Vector3.ZERO
 var patrol_has_target: bool = false
 var patrol_idle_timer: float = 0.0
 
-# Alert state
-var _alert_target: Vector3 = Vector3.ZERO
-
-
+# Alert search
+var _alert_search_points: Array[Vector3] = []
+var _alert_search_idx: int = 0
+var _alert_total_timer: float = 0.0
+var _alert_scanning: bool = false
+var _alert_scan_timer: float = 0.0
+var _high_priority_alert: bool = false  # true = “hard” alert (closer / radio from nearby)
 
 # Nav bookkeeping
 var _nav_ready: bool = false
@@ -60,26 +62,26 @@ func _ready() -> void:
 
 	player = get_tree().get_first_node_in_group("player")
 
+	# Perception signals (your Perception.gd should already emit these)
 	perception.player_seen.connect(_on_player_seen)
 	perception.player_lost.connect(_on_player_lost)
 
-	# Basic nav agent tuning
+	# Nav agent tuning
 	agent.path_desired_distance = 0.5
 	agent.target_desired_distance = 0.5
+	agent.path_max_distance = 2.0
 	agent.avoidance_enabled = false
 
-	# Wait until navigation map is ready
 	call_deferred("_await_nav_ready")
 
 
 func _await_nav_ready() -> void:
-	var rid := agent.get_navigation_map()
+	var rid: RID = agent.get_navigation_map()
 	while not (rid.is_valid() and NavigationServer3D.map_get_iteration_id(rid) > 0):
 		await get_tree().process_frame
 		rid = agent.get_navigation_map()
 
 	_nav_ready = true
-	# Start with a valid target (current position)
 	agent.target_position = global_transform.origin
 
 
@@ -89,6 +91,9 @@ func _physics_process(delta: float) -> void:
 
 	if player == null:
 		player = get_tree().get_first_node_in_group("player")
+
+	# Local hearing: close-range “I hear you behind me”
+	_local_hearing_check()
 
 	_update_state(delta)
 	_update_targets(delta)
@@ -104,15 +109,54 @@ func _on_player_seen(pos: Vector3) -> void:
 	last_known = pos
 	state = State.CHASE
 	_alert_scanning = false
-	Director.push_event("lkp", pos)
+	_high_priority_alert = true
+	# This sighting drives heat + alerts other guards
+	Director.push_event("sighting", pos, 1.0)
 
 
 func _on_player_lost(pos: Vector3) -> void:
 	last_known = pos
-	_alert_target = pos
-	_alert_scanning = false
-	Director.push_event("lkp", pos)
-	# State change handled in _update_state
+	Director.push_event("lkp", pos, 0.7)
+
+
+# Called by Director when another guard sights the player nearby
+func on_external_player_sighted(pos: Vector3, immediate: bool) -> void:
+	# If we see the player ourselves, ignore
+	if perception.is_visible():
+		return
+	# Already chasing, ignore
+	if state == State.CHASE:
+		return
+
+	_enter_alert_from(pos, immediate)
+
+
+
+# --- Local hearing -----------------------------------------------------------
+
+func _local_hearing_check() -> void:
+	if player == null:
+		return
+	if perception.is_visible():
+		return # vision already handles CHASE
+
+	var pbody := player as CharacterBody3D
+	if pbody == null:
+		return
+
+	var to_player: Vector3 = player.global_transform.origin - global_transform.origin
+	to_player.y = 0.0
+	var dist: float = to_player.length()
+	var speed: float = pbody.velocity.length()
+
+	# Sprinting: larger radius, higher speed threshold → hard alert
+	if dist <= hear_radius_sprint and speed >= hear_sprint_speed_thresh:
+		_enter_alert_from(player.global_transform.origin, true)
+		return
+
+	# Walking: smaller radius, lower speed threshold → soft alert (only from PATROL)
+	if dist <= hear_radius_walk and speed >= hear_walk_speed_thresh and state == State.PATROL:
+		_enter_alert_from(player.global_transform.origin, false)
 
 
 # --- State machine -----------------------------------------------------------
@@ -124,19 +168,14 @@ func _update_state(delta: float) -> void:
 
 	match state:
 		State.CHASE:
-			# Just lost LOS → go into ALERT and head to last known position
-			state = State.ALERT
-			_alert_target = last_known
-			_alert_scanning = false
-			_alert_scan_timer = alert_scan_time
-			_start_alert_search()
+			# Lost LOS → enter ALERT around last_known (high priority)
+			_enter_alert_from(last_known, true)
 
 		State.ALERT:
-			# Transitions (back to PATROL) handled in alert logic
+			# Transitions handled in _update_alert_target
 			pass
 
 		State.PATROL:
-			# Pure patrol; transitions only from CHASE/ALERT
 			pass
 
 
@@ -152,26 +191,6 @@ func _update_targets(delta: float) -> void:
 
 		State.CHASE:
 			_update_chase_target(delta)
-
-func _start_alert_search() -> void:
-	_alert_search_points.clear()
-	_alert_search_idx = 0
-	_alert_total_timer = alert_max_time
-	_alert_scanning = false
-	_alert_scan_timer = 0.0
-
-	var sid := Sector.id_at(last_known)
-	if sid != -1:
-		# Always start at last known position
-		_alert_search_points.append(last_known)
-
-		# Then add a few random points in that same sector
-		for i in range(alert_points_per_sector):
-			_alert_search_points.append(Sector.random_point_in(sid))
-	else:
-		# Fallback: just search around last_known even if sector failed
-		_alert_search_points.append(last_known)
-
 
 
 func _update_patrol_target(delta: float) -> void:
@@ -197,12 +216,30 @@ func _update_patrol_target(delta: float) -> void:
 	_set_agent_target(p)
 
 
+func _enter_alert_from(pos: Vector3, immediate: bool) -> void:
+	last_known = pos
+	state = State.ALERT
+	_high_priority_alert = immediate
+	_start_alert_search_from(pos)
+
+
+func _start_alert_search_from(pos: Vector3) -> void:
+	var points_per_sector: int = alert_points_per_sector
+	if _high_priority_alert:
+		points_per_sector = int(round(alert_points_per_sector * 1.5))
+
+	_alert_search_points = Director.get_alert_search_route(pos, points_per_sector)
+	_alert_search_idx = 0
+	_alert_total_timer = alert_max_time
+	_alert_scanning = false
+	_alert_scan_timer = 0.0
+
+
 func _update_alert_target(delta: float) -> void:
-	# If we magically see the player again, CHASE logic will take over
+	# If we see the player again, CHASE will take over
 	if perception.is_visible():
 		return
 
-	# Global timeout on ALERT
 	_alert_total_timer -= delta
 	if _alert_total_timer <= 0.0:
 		_alert_scanning = false
@@ -210,49 +247,45 @@ func _update_alert_target(delta: float) -> void:
 		patrol_has_target = false
 		return
 
-	# No points? Just bail back to patrol
 	if _alert_search_points.is_empty():
 		state = State.PATROL
 		patrol_has_target = false
 		return
 
-	# If currently scanning in place at a point
+	# Currently scanning this point
 	if _alert_scanning:
 		_alert_scan_timer -= delta
 		if _alert_scan_timer <= 0.0:
 			_alert_scanning = false
 			_alert_search_idx += 1
 			if _alert_search_idx >= _alert_search_points.size():
-				# Finished all waypoints
 				state = State.PATROL
 				patrol_has_target = false
-			# Next frame we'll move toward the next point if any
 		return
 
-	# Not scanning → move toward the current search point
-	var target := _alert_search_points[_alert_search_idx]
-	var to_target := target - global_transform.origin
+	# Move toward current search point
+	var target: Vector3 = _alert_search_points[_alert_search_idx]
+	var to_target: Vector3 = target - global_transform.origin
 	to_target.y = 0.0
 
 	if to_target.length() > alert_reached_radius:
 		_set_agent_target(target)
 	else:
-		# Arrived at this search point → start scanning here
+		# Arrived → scan here
 		_alert_scanning = true
 		_alert_scan_timer = alert_scan_time
-		_set_agent_target(global_transform.origin) # stop at this spot
-
+		_set_agent_target(global_transform.origin)
 
 
 func _update_chase_target(delta: float) -> void:
 	if player == null:
 		return
 
-	var p := player.global_transform.origin
-	var now := Time.get_unix_time_from_system()
+	var p: Vector3 = player.global_transform.origin
+	var now: float = Time.get_unix_time_from_system()
 
-	var need_time := (now - _last_set_time) >= chase_retarget_interval
-	var need_dist := (_last_target_set == Vector3.INF) or (p.distance_to(_last_target_set) >= chase_retarget_dist)
+	var need_time: bool = (now - _last_set_time) >= chase_retarget_interval
+	var need_dist: bool = (_last_target_set == Vector3.INF) or (p.distance_to(_last_target_set) >= chase_retarget_dist)
 
 	if need_time or need_dist:
 		_set_agent_target(p)
@@ -262,49 +295,65 @@ func _set_agent_target(p: Vector3) -> void:
 	_last_set_time = Time.get_unix_time_from_system()
 	_last_target_set = p
 
-	var rid := agent.get_navigation_map()
+	var rid: RID = agent.get_navigation_map()
 	if not rid.is_valid():
 		return
 
-	# Snap to closest point on nav to avoid edge weirdness
-	var closest := NavigationServer3D.map_get_closest_point(rid, p)
+	var closest: Vector3 = NavigationServer3D.map_get_closest_point(rid, p)
 	if closest == Vector3.INF:
 		return
 
-	# Avoid thrashing if basically same target
 	if agent.target_position.distance_to(closest) > 0.1:
 		agent.target_position = closest
+		
+
+func on_external_noise_heard(pos: Vector3, loud: bool) -> void:
+	# If we see the player, ignore noise
+	if perception.is_visible():
+		return
+	# If currently chasing, stick to that
+	if state == State.CHASE:
+		return
+
+	# Treat loud noises (whistle, big landing) as high-priority alert,
+	# quieter ones as softer alert
+	_enter_alert_from(pos, loud)
+
+
+
 
 
 # --- Movement along nav path + alert scanning --------------------------------
 
 func _move_along_path(delta: float) -> void:
-	var vel := velocity
+	var vel: Vector3 = velocity
 
 	if agent.is_navigation_finished():
-		# Special case: ALERT scanning in place
 		if state == State.ALERT and _alert_scanning:
-			# Slow spin while scanning
 			rotation.y += deg_to_rad(alert_scan_speed_deg) * delta
-
 			vel.x = lerp(vel.x, 0.0, 0.2)
 			vel.z = lerp(vel.z, 0.0, 0.2)
 		else:
-			# No path / reached target → slow to stop
 			vel.x = lerp(vel.x, 0.0, 0.2)
 			vel.z = lerp(vel.z, 0.0, 0.2)
 	else:
-		var next_pos := agent.get_next_path_position()
-		var to_next := next_pos - global_transform.origin
+		var next_pos: Vector3 = agent.get_next_path_position()
+		var to_next: Vector3 = next_pos - global_transform.origin
 		to_next.y = 0.0
+		var dist2: float = to_next.length_squared()
 
-		if to_next.length() > 0.05:
-			var dir := to_next.normalized()
-			vel.x = dir.x * move_speed
-			vel.z = dir.z * move_speed
+		if dist2 > 0.04: # ~0.2m
+			var dist: float = sqrt(dist2)
+			var dir: Vector3 = to_next / dist
 
-			# Rotate towards path direction
-			var target_yaw := atan2(-dir.x, -dir.z)
+			var speed_mul: float = 1.0
+			if state == State.ALERT and _high_priority_alert:
+				speed_mul = 1.15  # slightly more aggressive alert
+
+			vel.x = dir.x * move_speed * speed_mul
+			vel.z = dir.z * move_speed * speed_mul
+
+			var target_yaw: float = atan2(-dir.x, -dir.z)
 			rotation.y = lerp_angle(rotation.y, target_yaw, turn_speed * delta)
 		else:
 			vel.x = lerp(vel.x, 0.0, 0.2)

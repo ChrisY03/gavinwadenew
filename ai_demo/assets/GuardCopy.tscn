@@ -29,6 +29,7 @@ floor_block_on_wall = false
 floor_max_angle = 1.2304571
 floor_snap_length = 0.0
 script = ExtResource("1_khb5d")
+alert_scan_time = 2.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_rtt6x")
@@ -52,9 +53,9 @@ text = "PATROL"
 [node name="SpotLight3D" type="SpotLight3D" parent="Facing"]
 transform = Transform3D(1, 0, 0, 0, 0.977787, 0.20960106, 0, -0.20960106, 0.977787, 0.010272254, 0.6538569, -0.5532597)
 light_color = Color(0.545348, 0.6728721, 0.9617235, 1)
-spot_range = 30.0
+spot_range = 60.0
 spot_attenuation = -1.0
-spot_angle = 55.0
+spot_angle = 61.927307
 
 [node name="Overhead" type="Node3D" parent="Facing"]
 
@@ -65,10 +66,10 @@ font_size = 96
 outline_size = 2
 
 [node name="VisionCone3D" type="Area3D" parent="Facing"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.46779156, -0.57939816)
+transform = Transform3D(0.99994916, 0.0061916537, -0.007958874, -0.0061640027, 0.9999749, 0.003493889, 0.007980309, -0.00344465, 0.9999622, 0, 0.46779156, -0.57939816)
 script = ExtResource("3_n46ly")
-range = 25.42
-angle = 80.0
+range = 30.0
+angle = 120.0
 debug_draw = true
 vision_test_mode = 0
 metadata/_custom_type_script = "uid://cmgcelj1qxg8o"

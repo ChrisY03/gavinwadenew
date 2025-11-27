@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bb62dwhc6skd4"]
+
+[ext_resource type="Script" uid="uid://cphlryf0fa8u5" path="res://AIBootstrap.gd" id="1_qyup2"]
+
+[node name="AIBootstrap" type="Node3D"]
+script = ExtResource("1_qyup2")
