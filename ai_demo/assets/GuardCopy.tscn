@@ -1,10 +1,8 @@
-[gd_scene load_steps=12 format=3 uid="uid://hlpi6yw73pl"]
+[gd_scene load_steps=9 format=3 uid="uid://hlpi6yw73pl"]
 
 [ext_resource type="Script" uid="uid://sogqmn71hqf7" path="res://scripts/GuardController.gd" id="1_khb5d"]
-[ext_resource type="PackedScene" uid="uid://nme5b2i20thm" path="res://assets/player_detector.tscn" id="3_kegum"]
 [ext_resource type="Script" uid="uid://cmgcelj1qxg8o" path="res://addons/tattomoosa.vision_cone_3d/src/VisionCone3D.gd" id="3_n46ly"]
 [ext_resource type="Script" uid="uid://6afiheyvybv7" path="res://scripts/GuardPercepition.gd" id="4_4uogl"]
-[ext_resource type="Script" uid="uid://bpgref4gonsve" path="res://assets/player_hit_zone.gd" id="5_51nhs"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rtt6x"]
 
@@ -18,9 +16,6 @@ size = Vector3(0.7, 0.1, 0.3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ajgek"]
 albedo_color = Color(0, 0, 0, 1)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_khb5d"]
-size = Vector3(5.1517944, 1, 2.3793945)
 
 [node name="Guard" type="CharacterBody3D" groups=["guards"]]
 wall_min_slide_angle = 0.7853982
@@ -74,24 +69,9 @@ debug_draw = true
 vision_test_mode = 0
 metadata/_custom_type_script = "uid://cmgcelj1qxg8o"
 
-[node name="PlayerDetector" parent="Facing" instance=ExtResource("3_kegum")]
-transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0.052469254, 0, 0)
-
 [node name="Perception" type="Node3D" parent="."]
 script = ExtResource("4_4uogl")
 
-<<<<<<< HEAD
-[node name="PlayerHitZone" type="Area3D" parent="."]
-script = ExtResource("5_51nhs")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerHitZone"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.19448853, 0, -0.68969727)
-shape = SubResource("BoxShape3D_khb5d")
-
-[node name="DamageTimer" type="Timer" parent="PlayerHitZone"]
-wait_time = 0.5
-=======
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 keep_y_velocity = false
 debug_enabled = true
->>>>>>> 8ffebf129bd292e8dfd29ed6abe9882629daf867

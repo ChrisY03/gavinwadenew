@@ -369,7 +369,6 @@ func _move_along_path(delta: float) -> void:
 
 	velocity = vel
 	move_and_slide()
-<<<<<<< HEAD
 
 
 func _ensure_patrol_target(delta: float) -> void:
@@ -398,5 +397,3 @@ func _ensure_patrol_target(delta: float) -> void:
 	patrol_has_target = true
 	patrol_idle_timer = patrol_idle_time
 	print("Guard: new patrol target from Director = ", p)
-=======
->>>>>>> 8ffebf129bd292e8dfd29ed6abe9882629daf867
