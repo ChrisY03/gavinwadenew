@@ -1,8 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://c3yjp7bnretq1"]
+[gd_scene load_steps=12 format=3 uid="uid://c2hara3ig8d4y"]
 
 [ext_resource type="Script" uid="uid://sogqmn71hqf7" path="res://scripts/GuardController.gd" id="1_ot108"]
 [ext_resource type="Script" uid="uid://cmgcelj1qxg8o" path="res://addons/tattomoosa.vision_cone_3d/src/VisionCone3D.gd" id="2_i2css"]
 [ext_resource type="Script" uid="uid://6afiheyvybv7" path="res://scripts/GuardPercepition.gd" id="3_pedp5"]
+[ext_resource type="PackedScene" uid="uid://nme5b2i20thm" path="res://assets/player_detector.tscn" id="4_i2css"]
+[ext_resource type="Script" uid="uid://bpgref4gonsve" path="res://assets/player_hit_zone.gd" id="5_pedp5"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rtt6x"]
 
@@ -16,6 +18,9 @@ size = Vector3(0.7, 0.1, 0.3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ajgek"]
 albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pedp5"]
+size = Vector3(4.2630615, 1, 1.895935)
 
 [node name="Guard" type="CharacterBody3D" groups=["guards"]]
 wall_min_slide_angle = 0.7853982
@@ -80,3 +85,14 @@ script = ExtResource("3_pedp5")
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 keep_y_velocity = false
 debug_enabled = true
+
+[node name="PlayerHitZone" parent="." instance=ExtResource("4_i2css")]
+transform = Transform3D(-0.99994916, 0.0061916537, 0.007958962, 0.006164002, 0.9999749, -0.0034938895, -0.007980397, -0.00344465, -0.9999622, 0, 0.14429283, -0.09178811)
+script = ExtResource("5_pedp5")
+
+[node name="DamageTimer" type="Timer" parent="PlayerHitZone"]
+wait_time = 0.5
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="PlayerHitZone"]
+transform = Transform3D(0.99998355, 1.2849887e-07, 0, 1.0895383e-07, 1, 0, 3.7252903e-08, 1.8626451e-08, 1, -0.07244205, 4.4703484e-08, 1.2267151)
+shape = SubResource("BoxShape3D_pedp5")
