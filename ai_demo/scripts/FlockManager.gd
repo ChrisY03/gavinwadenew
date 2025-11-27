@@ -13,7 +13,6 @@ func register_flock(flock):
 func request_valid_target(desired: Vector3) -> Vector3:
 	var result := desired
 
-	# Try up to N times to find a free spot
 	for i in range(max_attempts):
 		var ok := true
 
@@ -26,11 +25,9 @@ func request_valid_target(desired: Vector3) -> Vector3:
 			reserve_target(result)
 			return result
 
-		# If too close → push farther away randomly
 		result.x += randf_range(-40, 40)
 		result.z += randf_range(-40, 40)
 
-	# If all attempts fail → still reserve something but warn
 	push_warning("⚠ Could not find fully unique target, using fallback.")
 	reserve_target(result)
 	return result

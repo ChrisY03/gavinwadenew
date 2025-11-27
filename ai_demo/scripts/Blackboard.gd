@@ -6,8 +6,7 @@ func add_noise(pos: Vector3, radius: float, ttl: float) -> void:
 	alerts.append({"pos": pos, "radius": radius, "ttl": ttl})
 
 func add_bird_alert(pos: Vector3) -> void:
-	# Birds make a medium-sized "noise" with a slightly longer lifetime
-	add_noise(pos, 15.0, 5.0)   # radius 15, lasts 5 seconds
+	add_noise(pos, 30, 5.0)   # radius 15, lasts 5 seconds
 	print(".. Blackboard: Bird alert added at ", pos)
 
 func tick(delta: float) -> void:

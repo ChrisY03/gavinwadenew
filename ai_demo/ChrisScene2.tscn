@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://dj0vxhttsyh6b" path="res://assets/terrrain.tscn" id="1_3054b"]
 [ext_resource type="PackedScene" uid="uid://dts1rqcw4f4af" path="res://assets/player.tscn" id="3_ydxp1"]
 [ext_resource type="PackedScene" uid="uid://ceqkgqnynw557" path="res://assets/heli.tscn" id="4_72a54"]
-[ext_resource type="PackedScene" uid="uid://c3yjp7bnretq1" path="res://assets/GuardReal.tscn" id="5_4cyrb"]
+[ext_resource type="PackedScene" uid="uid://c2hara3ig8d4y" path="res://assets/GuardReal.tscn" id="5_4cyrb"]
 [ext_resource type="PackedScene" uid="uid://ylggyhfgm3a7" path="res://bird_flock.tscn" id="5_ro6od"]
 
 [node name="Node3D" type="Node3D"]
