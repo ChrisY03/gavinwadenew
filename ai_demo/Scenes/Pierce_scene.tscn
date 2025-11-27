@@ -11,8 +11,12 @@
 
 [node name="Helicopter" parent="." instance=ExtResource("2_8upjp")]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 30, 0)
+min_x = -50.0
+max_x = 50.0
+min_z = -50.0
+max_z = 50.0
 
-[node name="Player" parent="." groups=["player"] instance=ExtResource("3_8upjp")]
+[node name="Player" parent="." instance=ExtResource("3_8upjp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.76252, 0)
 
 [node name="BirdFlock" parent="." instance=ExtResource("4_d4b07")]

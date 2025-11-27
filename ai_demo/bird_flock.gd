@@ -46,25 +46,24 @@ func _ready():
 	ground_check = $GroundCheck
 	alert_sound = $BirdAlertSound
 
-	# Connect triggers
+	# Connect signals
 	trigger_area.body_entered.connect(_on_player_enter)
 	trigger_area.body_exited.connect(_on_player_exit)
 
-	# Autoload registration
+	# Register with FlockManager autoload
 	if Engine.has_singleton("FlockManager"):
 		FlockManager.register_flock(self)
 	else:
-		push_warning("⚠ FlockManager not loaded as autoload!")
+		push_warning("⚠ FlockManager autoload not found!")
 
 	# Safety checks
 	if ground_check == null:
-		push_error("❌ GroundCheck RayCast3D missing!")
-
+		push_error("❌ Missing GroundCheck RayCast3D!")
 	if alert_sound == null:
-		push_error("❌ BirdAlertSound not found!")
+		push_error("❌ Missing BirdAlertSound node!")
 
 # ===========================
-# PHYSICS LOOP
+# PHYSICS PROCESS
 # ===========================
 func _physics_process(delta):
 	trigger_area.global_position = global_position
@@ -76,7 +75,7 @@ func _physics_process(delta):
 		_process_orbit(delta)
 
 # ===========================
-# UPDATE HEIGHT ABOVE TERRAIN
+# TERRAIN HEIGHT ADJUSTMENT
 # ===========================
 func _update_ground_height():
 	ground_check.global_position = global_position + Vector3(0, 50, 0)
@@ -86,7 +85,7 @@ func _update_ground_height():
 		global_position.y = terrain_y + orbit_height
 
 # ===========================
-# ORBIT BEHAVIOR
+# ORBIT MOVEMENT
 # ===========================
 func _process_orbit(delta):
 	angle += orbit_speed * delta
@@ -101,7 +100,7 @@ func _process_orbit(delta):
 		bird.look_at(center, Vector3.UP)
 
 # ===========================
-# BEGIN FLEE BEHAVIOR
+# START FLEEING
 # ===========================
 func _start_flee_from(player_pos: Vector3):
 	if is_fleeing:
@@ -110,19 +109,16 @@ func _start_flee_from(player_pos: Vector3):
 	is_fleeing = true
 	flee_timer = flee_duration
 
-	# Move away from player
 	var away := (global_position - player_pos).normalized()
-	var flee_strength: float = randf_range(flee_distance, flee_distance * 3.0)
-	var desired_target: Vector3 = global_position + away * flee_strength
+	var flee_strength := randf_range(flee_distance, flee_distance * 3.0)
+	var desired_target := global_position + away * flee_strength
 
-	# Request SAFE and UNIQUE target from manager
-	var valid: Vector3 = FlockManager.request_valid_target(desired_target)
+	# Request SAFE target
+	var safe_target := FlockManager.request_valid_target(desired_target)
+	flee_target = safe_target
 
-	if valid == Vector3.INF:
-		print("❌ No valid flee target found for this flock!")
-		flee_target = desired_target   # fallback
-	else:
-		flee_target = valid
+	# Reserve this target
+	FlockManager.reserve_target(flee_target)
 
 	print("🕊 Birds fleeing to:", flee_target)
 
@@ -134,41 +130,42 @@ func _process_flee(delta):
 
 	if flee_timer <= 0.0:
 		is_fleeing = false
-		print("🕊 Birds calm — returning to normal behaviour.")
+		print("🕊 Birds calm — returning to orbit.")
+
+		# Release reserved target
 		FlockManager.release_target(flee_target)
 		return
 
 	var target := flee_target + Vector3(0, flee_height, 0)
-	var dir: Vector3 = target - global_position
+	var dir := target - global_position
 
 	if dir.length() > 0.1:
 		dir = dir.normalized()
 		global_position += dir * flee_speed * delta
 
-	# Clamp inside terrain
 	global_position.x = clamp(global_position.x, min_x, max_x)
 	global_position.z = clamp(global_position.z, min_z, max_z)
 
 # ===========================
-# TRIGGER ENTER
+# SIGNAL: PLAYER ENTER AREA
 # ===========================
 func _on_player_enter(body: Node3D):
-	if body.is_in_group("player"):
-		print("🟥 Bird flock detected the player!")
+	if not body.is_in_group("player"):
+		return
 
-		# Play alert sound
-		if alert_sound:
-			alert_sound.play()
+	print("🟥 Bird flock detected the player!")
 
-		# Send guard noise
-		var bb = get_node("/root/Blackboard")
-		bb.add_noise(global_position, 50.0, 5.0)
-		print("📣 Bird alert sent to guards.")
+	if alert_sound:
+		alert_sound.play()
 
-		_start_flee_from(body.global_position)
+	var bb = get_node("/root/Blackboard")
+	bb.add_noise(global_position, 50.0, 5.0)
+	print("📣 Bird alert sent to guards.")
+
+	_start_flee_from(body.global_position)
 
 # ===========================
-# TRIGGER EXIT
+# SIGNAL: PLAYER EXIT AREA
 # ===========================
 func _on_player_exit(body: Node3D):
 	if body.is_in_group("player"):

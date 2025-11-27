@@ -1,38 +1,44 @@
 extends Node
 
-var flocks: Array = []                # List of all bird flocks in the scene
-var reserved_positions: Array = []    # Active flee targets
-var min_distance_between_targets := 20.0
+var flocks: Array = []
+var reserved_positions: Array[Vector3] = []
+var min_distance_between_targets: float = 30.0
+var max_attempts := 20    # prevent infinite loops
 
 
-# -----------------------
-# Called by each BirdFlock when it loads
-# -----------------------
 func register_flock(flock):
 	flocks.append(flock)
 
 
-# -----------------------
-# Suggests a NEW flee target that is NOT near another flock’s target
-# -----------------------
 func request_valid_target(desired: Vector3) -> Vector3:
-	for other_target in reserved_positions:
-		if desired.distance_to(other_target) < min_distance_between_targets:
-			# Too close — push it away randomly
-			desired.x += randf_range(-20, 20)
-			desired.z += randf_range(-20, 20)
-	return desired
+	var result := desired
+
+	# Try up to N times to find a free spot
+	for i in range(max_attempts):
+		var ok := true
+
+		for other in reserved_positions:
+			if result.distance_to(other) < min_distance_between_targets:
+				ok = false
+				break
+
+		if ok:
+			reserve_target(result)
+			return result
+
+		# If too close → push farther away randomly
+		result.x += randf_range(-40, 40)
+		result.z += randf_range(-40, 40)
+
+	# If all attempts fail → still reserve something but warn
+	push_warning("⚠ Could not find fully unique target, using fallback.")
+	reserve_target(result)
+	return result
 
 
-# -----------------------
-# Called when a flock starts fleeing
-# -----------------------
 func reserve_target(pos: Vector3):
 	reserved_positions.append(pos)
 
 
-# -----------------------
-# Called when flock finishes fleeing
-# -----------------------
 func release_target(pos: Vector3):
 	reserved_positions.erase(pos)
