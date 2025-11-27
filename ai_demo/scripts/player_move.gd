@@ -167,6 +167,7 @@ func _process(delta: float) -> void:
 		
 func apply_damage(amount: int) -> void:
 	if health <= 0:
+		get_tree().quit()
 		return # already dead
 		
 	health = max(health - amount, 0)
@@ -174,3 +175,4 @@ func apply_damage(amount: int) -> void:
 	
 	if health == 0:
 		print("PLAYER DIED")
+		get_tree().quit()
