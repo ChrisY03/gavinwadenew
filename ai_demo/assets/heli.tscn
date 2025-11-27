@@ -9,11 +9,11 @@
 radius = 1.028
 height = 3.364
 
-[sub_resource type="BoxMesh" id="BoxMesh_42601"]
-size = Vector3(0.205, 0.24, 2.96)
-
 [sub_resource type="BoxMesh" id="BoxMesh_sgx7j"]
 size = Vector3(0.235, 6, 0.02)
+
+[sub_resource type="BoxMesh" id="BoxMesh_42601"]
+size = Vector3(0.205, 0.24, 2.96)
 
 [sub_resource type="BoxMesh" id="BoxMesh_kkl24"]
 size = Vector3(0.8, 1.5, 1)
@@ -39,15 +39,18 @@ max_x = 100.0
 min_z = -100.0
 max_z = 100.0
 
+[node name="prop_holder" type="Node3D" parent="."]
+
+[node name="prop" type="MeshInstance3D" parent="prop_holder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.86048865, 1.8001261)
+material_override = ExtResource("1_kydm2")
+mesh = SubResource("BoxMesh_sgx7j")
+skeleton = NodePath("../../stem")
+
 [node name="stem" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.831419, 0.223326)
 material_override = ExtResource("1_kydm2")
 mesh = SubResource("BoxMesh_42601")
-
-[node name="prop" type="MeshInstance3D" parent="stem"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0290697, 1.5768)
-material_override = ExtResource("1_kydm2")
-mesh = SubResource("BoxMesh_sgx7j")
 
 [node name="tail" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.410448, -0.911884, 0, 0.911884, -0.410448, 0, -0.982034, 0.544868)
@@ -66,8 +69,10 @@ light_energy = 16.0
 light_volumetric_fog_energy = 0.5
 
 [node name="SearchLightPivot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.9644053, -0.26442856, 0, 0.26442856, 0.9644053, 0, 1.3986425, -1.1433351)
 
 [node name="SearchLight" type="SpotLight3D" parent="SearchLightPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.658029e-08, -1.0656326)
 light_color = Color(0.61088616, 0.7794469, 1, 1)
 light_energy = 25.0
 light_volumetric_fog_energy = 10.0
