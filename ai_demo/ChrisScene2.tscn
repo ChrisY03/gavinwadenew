@@ -1,9 +1,9 @@
 [gd_scene load_steps=6 format=3 uid="uid://dor8dpsn1s2hg"]
 
 [ext_resource type="PackedScene" uid="uid://dj0vxhttsyh6b" path="res://assets/terrrain.tscn" id="1_3054b"]
-[ext_resource type="PackedScene" uid="uid://hlpi6yw73pl" path="res://assets/GuardCopy.tscn" id="2_ydxp1"]
 [ext_resource type="PackedScene" uid="uid://dts1rqcw4f4af" path="res://assets/player.tscn" id="3_ydxp1"]
 [ext_resource type="PackedScene" uid="uid://ceqkgqnynw557" path="res://assets/heli.tscn" id="4_72a54"]
+[ext_resource type="PackedScene" uid="uid://c3yjp7bnretq1" path="res://assets/GuardReal.tscn" id="5_4cyrb"]
 [ext_resource type="PackedScene" uid="uid://ylggyhfgm3a7" path="res://bird_flock.tscn" id="5_ro6od"]
 
 [node name="Node3D" type="Node3D"]
@@ -20,11 +20,8 @@ transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 44.932
 [node name="BirdFlock" parent="." instance=ExtResource("5_ro6od")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 5, -58)
 
-[node name="Guard" parent="." instance=ExtResource("2_ydxp1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.245777, 12.816856, 48.510124)
+[node name="Guard" parent="." instance=ExtResource("5_4cyrb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.674236, 74.721695, 12.131243)
 
-[node name="Guard2" parent="." instance=ExtResource("2_ydxp1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.960163, 6.497566, -35.503937)
-
-[node name="Guard3" parent="." instance=ExtResource("2_ydxp1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.117767334, 21.694984, 93.55478)
+[node name="Guard2" parent="." instance=ExtResource("5_4cyrb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.775647, 79.09033, 61.104824)
