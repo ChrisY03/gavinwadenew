@@ -182,3 +182,72 @@ func neighbors_of(sid: int) -> Array[int]:
 	for idx in packed.size():
 		out.append(packed[idx])
 	return out
+	
+func debug_fill_multimesh(mmi: MultiMeshInstance3D) -> void:
+	if mmi == null:
+		return
+
+	var mm: MultiMesh = mmi.multimesh
+	if mm == null:
+		mm = MultiMesh.new()
+		mmi.multimesh = mm
+
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_colors = true
+
+	var count: int = _sectors.size()
+	mm.instance_count = count
+
+	for i in range(count):
+		var s: Dictionary = _sectors[i]
+		var center: Vector3 = s["center"] as Vector3
+		var walkable: bool = bool(s["walkable"])
+
+		var t: Transform3D = Transform3D.IDENTITY
+		# Slightly above ground so it doesn't z-fight with terrain
+		t.origin = center + Vector3(0.0, 0.2, 0.0)
+
+		# Tile size relative to cell_size – tweak if too big/small
+		var scale: float = cell_size * 0.45
+		t.basis = Basis.IDENTITY.scaled(Vector3(scale, 0.3, scale))
+
+		mm.set_instance_transform(i, t)
+
+		var h: float = float(s["heat"])
+		var col: Color = _heat_to_color(h, walkable)
+		mm.set_instance_color(i, col)
+
+
+func debug_update_multimesh(mmi: MultiMeshInstance3D) -> void:
+	if mmi == null:
+		return
+
+	var mm: MultiMesh = mmi.multimesh
+	if mm == null:
+		return
+
+	var count: int = _sectors.size()
+	if mm.instance_count != count:
+		return
+
+	for i in range(count):
+		var s: Dictionary = _sectors[i]
+		var h: float = float(s["heat"])
+		var walkable: bool = bool(s["walkable"])
+		var col: Color = _heat_to_color(h, walkable)
+		mm.set_instance_color(i, col)
+
+
+func _heat_to_color(heat: float, walkable: bool) -> Color:
+	# heat is clamped in bump_heat to [0, 10], normalise to 0..1-ish
+	var t: float = clamp(heat / 3.0, 0.0, 1.0)  # 0..~3 is your "interesting" range
+
+	var cold: Color = Color(0.1, 0.1, 1, 0.5)   # dark blue-ish, transparent
+	var hot: Color  = Color(1.0, 0.2, 0.2, 0.8)   # bright red, more opaque
+
+	var base: Color = cold.lerp(hot, t)
+
+	if not walkable:
+		base = Color(0.2, 0.2, 0.2, 0.15)
+
+	return base

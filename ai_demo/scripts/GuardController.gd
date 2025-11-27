@@ -34,6 +34,11 @@ var state: State = State.PATROL
 @onready var agent: NavigationAgent3D = $NavigationAgent3D
 @onready var perception: Node = $Perception
 @onready var label: Label3D = $Facing/Label3D
+@onready var overhead: Node3D = $Facing/Overhead
+@onready var sign_node: Label3D = $Facing/Overhead/Sign
+
+var _last_sign_state: int = -1    # -1 = none, 1 = ALERT, 2 = CHASE
+
 
 var player: Node3D
 var last_known: Vector3 = Vector3.ZERO
@@ -60,6 +65,7 @@ var _last_set_time: float = 0.0
 func _ready() -> void:
 	add_to_group("guards")
 
+	_hide_sign()
 	player = get_tree().get_first_node_in_group("player")
 
 	# Perception signals (your Perception.gd should already emit these)
@@ -91,6 +97,12 @@ func _physics_process(delta: float) -> void:
 
 	if player == null:
 		player = get_tree().get_first_node_in_group("player")
+		
+	_update_signs()
+
+	if label:
+		label.text = ["PATROL", "ALERT", "CHASE"][state]
+
 
 	# Local hearing: close-range “I hear you behind me”
 	_local_hearing_check()
@@ -398,3 +410,44 @@ func _ensure_patrol_target(delta: float) -> void:
 	patrol_has_target = true
 	patrol_idle_timer = patrol_idle_time
 	print("Guard: new patrol target from Director = ", p)
+	
+func _update_signs() -> void:
+	if sign_node == null:
+		return
+
+	match state:
+		State.PATROL:
+			_hide_sign()
+
+		State.ALERT:
+			if _last_sign_state != State.ALERT:
+				_show_sign("?", Color(1.0, 0.9, 0.2)) # soft yellow
+				_last_sign_state = State.ALERT
+
+		State.CHASE:
+			if _last_sign_state != State.CHASE:
+				_show_sign("!", Color(1.0, 0.25, 0.25)) # red
+				_last_sign_state = State.CHASE
+
+
+func _show_sign(txt: String, col: Color) -> void:
+	sign_node.text = txt
+	sign_node.modulate = col
+	sign_node.visible = true
+
+	# Optional tiny “pop” so it feels snappy:
+	if overhead:
+		overhead.scale = Vector3.ONE * 0.7
+		var tw := create_tween()
+		tw.tween_property(overhead, "scale", Vector3.ONE, 0.15)\
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _hide_sign() -> void:
+	if sign_node == null:
+		return
+	sign_node.visible = false
+	sign_node.modulate.a = 1.0
+	if overhead:
+		overhead.scale = Vector3.ONE
+	_last_sign_state = -1

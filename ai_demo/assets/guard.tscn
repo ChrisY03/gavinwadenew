@@ -27,6 +27,7 @@ albedo_color = Color(0.6493946, 0.66728926, 0.36843082, 0.50980395)
 
 [node name="Guard" type="CharacterBody3D" groups=["guards"]]
 script = ExtResource("4_kssj1")
+alert_reached_radius = 2.5
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_rtt6x")
