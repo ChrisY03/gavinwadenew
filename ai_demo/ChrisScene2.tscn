@@ -10,21 +10,21 @@
 
 [node name="Terrrain" parent="." instance=ExtResource("1_3054b")]
 
-[node name="Guard" parent="." instance=ExtResource("2_ydxp1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.606888, 16.42395, 82.94481)
-
 [node name="Player" parent="." instance=ExtResource("3_ydxp1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.950417, 18, -46)
 floor_max_angle_deg = 50.0
-
-[node name="Guard2" parent="." instance=ExtResource("2_ydxp1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.606888, 16.42395, -0.7601013)
-
-[node name="Guard3" parent="." instance=ExtResource("2_ydxp1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.568771, 17.477055, 82.18471)
 
 [node name="Helicopter" parent="." instance=ExtResource("4_72a54")]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 44.932014, 71.33187, -26.591415)
 
 [node name="BirdFlock" parent="." instance=ExtResource("5_ro6od")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 5, -58)
+
+[node name="Guard" parent="." instance=ExtResource("2_ydxp1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.245777, 12.816856, 48.510124)
+
+[node name="Guard2" parent="." instance=ExtResource("2_ydxp1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.960163, 6.497566, -35.503937)
+
+[node name="Guard3" parent="." instance=ExtResource("2_ydxp1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.117767334, 21.694984, 93.55478)
