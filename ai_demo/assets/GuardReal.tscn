@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://bpgref4gonsve" path="res://assets/player_hit_zone.gd" id="5_pedp5"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rtt6x"]
+height = 1.7
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kegum"]
 albedo_color = Color(0.1223133, 0.35863125, 1, 1)
@@ -83,12 +84,14 @@ metadata/_custom_type_script = "uid://cmgcelj1qxg8o"
 script = ExtResource("3_pedp5")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_max_distance = 8.01
 keep_y_velocity = false
 debug_enabled = true
 
 [node name="PlayerHitZone" parent="." instance=ExtResource("4_i2css")]
 transform = Transform3D(-0.99994916, 0.0061916537, 0.007958962, 0.006164002, 0.9999749, -0.0034938895, -0.007980397, -0.00344465, -0.9999622, 0, 0.14429283, -0.09178811)
 script = ExtResource("5_pedp5")
+damage_amount = 100
 
 [node name="DamageTimer" type="Timer" parent="PlayerHitZone"]
 wait_time = 0.5

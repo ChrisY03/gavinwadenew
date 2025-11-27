@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://dj0vxhttsyh6b" path="res://assets/terrrain.tscn" id="1_3054b"]
 [ext_resource type="PackedScene" uid="uid://dts1rqcw4f4af" path="res://assets/player.tscn" id="3_ydxp1"]
 [ext_resource type="PackedScene" uid="uid://ceqkgqnynw557" path="res://assets/heli.tscn" id="4_72a54"]
-[ext_resource type="PackedScene" uid="uid://c3yjp7bnretq1" path="res://assets/GuardReal.tscn" id="5_4cyrb"]
+[ext_resource type="PackedScene" uid="uid://c2hara3ig8d4y" path="res://assets/GuardReal.tscn" id="5_4cyrb"]
 [ext_resource type="PackedScene" uid="uid://ylggyhfgm3a7" path="res://bird_flock.tscn" id="5_ro6od"]
 
 [node name="Node3D" type="Node3D"]
@@ -11,7 +11,7 @@
 [node name="Terrrain" parent="." instance=ExtResource("1_3054b")]
 
 [node name="Player" parent="." instance=ExtResource("3_ydxp1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.950417, 18, -46)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.93595, 26.348663, 36.659576)
 floor_max_angle_deg = 50.0
 
 [node name="Helicopter" parent="." instance=ExtResource("4_72a54")]
@@ -21,7 +21,10 @@ transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 44.932
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 5, -58)
 
 [node name="Guard" parent="." instance=ExtResource("5_4cyrb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.674236, 74.721695, 12.131243)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68.723175, 8.031273, -63.6418)
 
 [node name="Guard2" parent="." instance=ExtResource("5_4cyrb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.775647, 79.09033, 61.104824)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.726715, 8.9648285, -14.668217)
+
+[node name="Guard3" parent="." instance=ExtResource("5_4cyrb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.23246, 8.9648285, -14.668217)
