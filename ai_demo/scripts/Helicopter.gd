@@ -6,7 +6,7 @@ signal player_spotted(player_position: Vector3)
 # MOVEMENT SETTINGS
 # ===========================
 @export var speed: float = 10.0
-@export var rotation_speed: float = 0.7     # SLOW real helicopter turning
+@export var rotation_speed: float = 0.7   # ⬅ SLOWER, MORE REALISTIC TURNING
 @export var use_random_patrol: bool = true
 @export var patrol_points: Array[NodePath] = []
 
@@ -19,7 +19,7 @@ signal player_spotted(player_position: Vector3)
 @export var forward_offset_degrees: float = 180.0
 
 # ===========================
-# DETECTION
+# RAYCAST DETECTION
 # ===========================
 @export var detector_pivot_path: NodePath
 var detector_pivot: Node3D
@@ -31,12 +31,8 @@ var player: Node3D
 # ===========================
 var alert_sound: AudioStreamPlayer3D
 
-# ===========================
-# INTERNAL
-# ===========================
 var rng := RandomNumberGenerator.new()
 var random_target := Vector3.ZERO
-
 
 # ===========================
 # READY
@@ -70,10 +66,8 @@ func _ready() -> void:
 
 	set_physics_process(true)
 
-
-
 # ===========================
-# RANDOM TARGET PICKER
+# RANDOM TARGET
 # ===========================
 func _pick_new_random_target() -> void:
 	random_target = Vector3(
@@ -82,43 +76,29 @@ func _pick_new_random_target() -> void:
 		rng.randf_range(min_z, max_z)
 	)
 
-
-
 # ===========================
-# REALISTIC HELICOPTER MOVEMENT
+# MOVEMENT
 # ===========================
 func _move_random(delta: float) -> void:
-	var to_target := random_target - global_position
-	var horizontal := Vector3(to_target.x, 0, to_target.z)
+	var dir := random_target - global_position
+	var dist := dir.length()
 
-	if horizontal.length() > 0.5:
+	if dist > 0.2:
+		dir = dir.normalized()
+		global_position += dir * speed * delta
 
-		# STEP 1 — Determine desired direction (but DO NOT move in it yet!)
-		var desired_dir := horizontal.normalized()
+		var flat := Vector3(dir.x, 0, dir.z)
+		if flat.length() > 0.001:
+			var target_yaw := atan2(flat.x, flat.z)
 
-		# STEP 2 — Yaw we want to face
-		var target_yaw := atan2(desired_dir.x, desired_dir.z)
-
-		# STEP 3 — Smooth turning (slow = realistic)
-		rotation.y = lerp_angle(
-			rotation.y,
-			target_yaw + deg_to_rad(forward_offset_degrees),
-			rotation_speed * delta
-		)
-
-		# STEP 4 — Move FORWARD in the direction helicopter is currently facing
-		var forward := Vector3(
-			sin(rotation.y - deg_to_rad(forward_offset_degrees)),
-			0,
-			cos(rotation.y - deg_to_rad(forward_offset_degrees))
-		)
-
-		global_position += forward.normalized() * speed * delta
-
+			# ★ SLOW, SMOOTH ROTATION HERE
+			rotation.y = lerp_angle(
+				rotation.y,
+				target_yaw + deg_to_rad(forward_offset_degrees),
+				rotation_speed * delta
+			)
 	else:
 		_pick_new_random_target()
-
-
 
 # ===========================
 # MAIN LOOP
@@ -128,8 +108,6 @@ func _physics_process(delta: float) -> void:
 		_move_random(delta)
 
 	_raycast_detect_player()
-
-
 
 # ===========================
 # RAYCAST DETECTION
@@ -144,54 +122,34 @@ func _raycast_detect_player() -> void:
 		if collider == player:
 			print("🔦 Helicopter raycast sees player at:", player.global_position)
 
-			# OPTIONAL: slowly turn helicopter toward player during detection
-			var dir_to_player := (player.global_position - global_position).normalized()
-			var target_yaw := atan2(dir_to_player.x, dir_to_player.z)
-			rotation.y = lerp_angle(
-				rotation.y,
-				target_yaw + deg_to_rad(forward_offset_degrees),
-				rotation_speed * get_physics_process_delta_time()
-			)
-
 			_play_alert_sound()
 			emit_signal("player_spotted", player.global_position)
 
-
-
 # ===========================
-# SPOTLIGHT DETECTION
+# SPOTLIGHT AREA DETECTION
 # ===========================
 func _on_detection_area_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		print("🚁 Helicopter spotlight detected the player!")
 
-		# Turn gradually toward player
-		var dir_to_player := (body.global_position - global_position).normalized()
-		var target_yaw := atan2(dir_to_player.x, dir_to_player.z)
-		rotation.y = lerp_angle(
-			rotation.y,
-			target_yaw + deg_to_rad(forward_offset_degrees),
-			rotation_speed * get_physics_process_delta_time()
-		)
-
+		# Sound effect
 		_play_alert_sound()
 
+		# Noise alert for guards
 		var bb = get_node("/root/Blackboard")
 		bb.add_noise(body.global_position, 100.0, 5.0)
 
 		print("📢 Helicopter alert sent to guards.")
 		emit_signal("player_spotted", body.global_position)
 
-
 func _on_detection_area_body_exited(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		print("Player left helicopter spotlight.")
-
-
 
 # ===========================
 # PLAY SOUND (SAFE)
 # ===========================
 func _play_alert_sound():
+	# Prevent overlapping playback
 	if alert_sound and not alert_sound.playing:
 		alert_sound.play()
