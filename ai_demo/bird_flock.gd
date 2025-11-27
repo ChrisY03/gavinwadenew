@@ -46,17 +46,14 @@ func _ready():
 	ground_check = $GroundCheck
 	alert_sound = $BirdAlertSound
 
-	# Connect signals
 	trigger_area.body_entered.connect(_on_player_enter)
 	trigger_area.body_exited.connect(_on_player_exit)
 
-	# Register with FlockManager autoload
 	if Engine.has_singleton("FlockManager"):
 		FlockManager.register_flock(self)
 	else:
 		push_warning("⚠ FlockManager autoload not found!")
 
-	# Safety checks
 	if ground_check == null:
 		push_error("❌ Missing GroundCheck RayCast3D!")
 	if alert_sound == null:
@@ -97,7 +94,13 @@ func _process_orbit(delta):
 		var y = center.y + orbit_height
 
 		bird.global_position = Vector3(x, y, z)
+
+		# Make bird face center
 		bird.look_at(center, Vector3.UP)
+
+		# FIX ORIENTATION OFFSET
+		# Try 90 or -90 depending on your model's forward axis
+		bird.rotate_y(deg_to_rad(90))
 
 # ===========================
 # START FLEEING
@@ -113,11 +116,9 @@ func _start_flee_from(player_pos: Vector3):
 	var flee_strength := randf_range(flee_distance, flee_distance * 3.0)
 	var desired_target := global_position + away * flee_strength
 
-	# Request SAFE target
 	var safe_target := FlockManager.request_valid_target(desired_target)
 	flee_target = safe_target
 
-	# Reserve this target
 	FlockManager.reserve_target(flee_target)
 
 	print("🕊 Birds fleeing to:", flee_target)
@@ -131,8 +132,6 @@ func _process_flee(delta):
 	if flee_timer <= 0.0:
 		is_fleeing = false
 		print("🕊 Birds calm — returning to orbit.")
-
-		# Release reserved target
 		FlockManager.release_target(flee_target)
 		return
 
