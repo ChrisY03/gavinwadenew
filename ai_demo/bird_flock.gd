@@ -159,6 +159,7 @@ func _on_player_enter(body: Node3D):
 
 	var bb = get_node("/root/Blackboard")
 	bb.add_noise(global_position, 50.0, 5.0)
+	Director._alert_nearby_guards_noise(global_position, 1)
 	print("📣 Bird alert sent to guards.")
 
 	_start_flee_from(body.global_position)
