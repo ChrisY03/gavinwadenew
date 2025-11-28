@@ -90,7 +90,6 @@ debug_enabled = true
 [node name="PlayerHitZone" parent="." instance=ExtResource("4_i2css")]
 transform = Transform3D(-0.99994916, 0.0061916537, 0.007958962, 0.006164002, 0.9999749, -0.0034938895, -0.007980397, -0.00344465, -0.9999622, 0, 0.14429283, -0.09178811)
 script = ExtResource("5_pedp5")
-damage_amount = 100
 damage_interval = 0.1
 
 [node name="DamageTimer" type="Timer" parent="PlayerHitZone"]
