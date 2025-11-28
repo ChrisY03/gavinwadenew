@@ -34,3 +34,9 @@ transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 71.354, 10.178031, -67.564896
 
 [node name="Guard" parent="." instance=ExtResource("5_0r2r5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72.046326, 12.0642605, 0)
+
+[node name="Guard2" parent="." instance=ExtResource("5_0r2r5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.2816, 14.444931, 42.832096)
+
+[node name="Guard3" parent="." instance=ExtResource("5_0r2r5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.2816, 7.7230644, -55.71006)

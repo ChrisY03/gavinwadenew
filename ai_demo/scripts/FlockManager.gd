@@ -28,7 +28,7 @@ func request_valid_target(desired: Vector3) -> Vector3:
 		result.x += randf_range(-40, 40)
 		result.z += randf_range(-40, 40)
 
-	push_warning("⚠ Could not find fully unique target, using fallback.")
+	push_warning("Could not find fully unique target, using fallback.")
 	reserve_target(result)
 	return result
 
