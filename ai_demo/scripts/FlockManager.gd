@@ -3,7 +3,7 @@ extends Node
 var flocks: Array = []
 var reserved_positions: Array[Vector3] = []
 var min_distance_between_targets: float = 30.0
-var max_attempts := 20    # prevent infinite loops
+var max_attempts := 20   
 
 
 func register_flock(flock):
