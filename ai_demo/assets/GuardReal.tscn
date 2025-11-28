@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://bpgref4gonsve" path="res://assets/player_hit_zone.gd" id="5_pedp5"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rtt6x"]
+height = 1.7
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kegum"]
 albedo_color = Color(0.1223133, 0.35863125, 1, 1)
@@ -20,7 +21,7 @@ size = Vector3(0.7, 0.1, 0.3)
 albedo_color = Color(0, 0, 0, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_pedp5"]
-size = Vector3(4.2630615, 1, 1.895935)
+size = Vector3(4.2630615, 1, 2.7984314)
 
 [node name="Guard" type="CharacterBody3D" groups=["guards"]]
 wall_min_slide_angle = 0.7853982
@@ -84,14 +85,16 @@ script = ExtResource("3_pedp5")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 keep_y_velocity = false
+debug_enabled = true
 
 [node name="PlayerHitZone" parent="." instance=ExtResource("4_i2css")]
 transform = Transform3D(-0.99994916, 0.0061916537, 0.007958962, 0.006164002, 0.9999749, -0.0034938895, -0.007980397, -0.00344465, -0.9999622, 0, 0.14429283, -0.09178811)
 script = ExtResource("5_pedp5")
+damage_interval = 0.1
 
 [node name="DamageTimer" type="Timer" parent="PlayerHitZone"]
 wait_time = 0.5
 
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="PlayerHitZone"]
-transform = Transform3D(0.99998355, 1.2849887e-07, 0, 1.0895383e-07, 1, 0, 3.7252903e-08, 1.8626451e-08, 1, -0.07244205, 4.4703484e-08, 1.2267151)
+transform = Transform3D(0.99998146, 1.4483885e-07, 0, 1.2660166e-07, 1, 0, 3.9115548e-08, 2.3748726e-08, 1, -0.072442055, 4.4703484e-08, 1.6779631)
 shape = SubResource("BoxShape3D_pedp5")
